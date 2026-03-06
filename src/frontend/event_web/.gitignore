@@ -11,6 +11,9 @@
 # production
 /build
 
+# generated Tailwind CSS (from npm run build:css / watch:css)
+/src/tailwind.output.css
+
 # misc
 .DS_Store
 .env.local
