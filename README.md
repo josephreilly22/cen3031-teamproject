@@ -16,11 +16,8 @@ Whether you're trying to get more involved this year or just looking to try new 
 
 ## Screenshots
 
+Coming Soon!
 <!-- Add screenshots of the app here -->
-
-| Home | Dashboard |
-|------|-----------|
-| _screenshot_ | _screenshot_ |
 
 ---
 
@@ -33,29 +30,6 @@ Whether you're trying to get more involved this year or just looking to try new 
 ### Backend
 - [Python](https://www.python.org/) — server-side logic and API
 - [MongoDB](https://www.mongodb.com/) — database for users and events
-
----
-
-## Project Structure
-
-```
-cen3031-teamproject/
-├── src/
-│   ├── frontend/
-│   │   └── event_web/       # React application
-│   │       ├── public/
-│   │       └── src/
-│   │           ├── App.js
-│   │           ├── DashboardPage.js
-│   │           ├── LoginPage.js
-│   │           ├── SignupPage.js
-│   │           ├── ProfilePage.js
-│   │           ├── HostRegistrationPage.js
-│   │           ├── AboutPage.js
-│   │           └── ForgotPasswordPage.js
-│   └── backend/             # Python backend (in progress)
-└── README.md
-```
 
 ---
 
@@ -105,7 +79,3 @@ cd src/backend
 This is a university group project for **CEN3031**. Please follow the team's branching and PR conventions when contributing.
 
 ---
-
-## License
-
-For academic use only.
