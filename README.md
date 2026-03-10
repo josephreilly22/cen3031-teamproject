@@ -24,12 +24,17 @@ Coming Soon!
 ## Tech Stack
 
 ### Frontend
+This directory contains every feature as part of our front-end for our application.
 - [React](https://react.dev/) (v19)
 - [React Router](https://reactrouter.com/) — client-side routing
 
 ### Backend
+This directory contains every feature as part of our back-end for our application.
 - [Python](https://www.python.org/) — server-side logic and API
 - [MongoDB](https://www.mongodb.com/) — database for users and events
+- [Hugging Face](https://huggingface.co/) — open-source machine learning models and inference for the recommendation system
+
+### Hugging Face API
 
 ---
 

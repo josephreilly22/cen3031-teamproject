@@ -1,5 +1,3 @@
-# WIP (NEEDS TO BE TURNED INTO A MODULE)
-
 from sentence_transformers import SentenceTransformer, util
 
 model = SentenceTransformer('all-MiniLM-L6-v2')  
