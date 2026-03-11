@@ -1,4 +1,3 @@
 {
-    "python.analysis.exclude": ["**/venv/**", "**/reference/**"],
-    "files.exclude": {"**/reference": true}
+    "python.analysis.exclude": ["**/venv/**", "**/node_modules", "**/__pycache__", "**/.*", ".venv", "**/reference/**"],
 }

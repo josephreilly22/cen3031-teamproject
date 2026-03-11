@@ -1,4 +1,4 @@
-# Reference Directory
+# Reference
 
 The nlp.py was our initial design for our recommendation algorithm, now simplified and optimized using ONNX and BF16 hosted on Hugging Face Spaces.
 

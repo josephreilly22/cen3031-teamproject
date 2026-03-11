@@ -34,7 +34,26 @@ This directory contains every feature as part of our back-end for our applicatio
 - [MongoDB](https://www.mongodb.com/) — database for users and events
 - [Hugging Face](https://huggingface.co/) — open-source machine learning models and inference for the recommendation system
 
-### Hugging Face API
+### Recommendation Engine
+The event recommendation system is powered by Hugging Face models running inside a Hugging Face Space.
+
+Libraries used:
+- [Hugging Face Transformers](https://huggingface.co/docs/transformers/index)
+- [ONNX Runtime](https://onnxruntime.ai/)
+- [Optimum ONNX](https://huggingface.co/docs/optimum/index)
+- [NumPy](https://numpy.org/)
+- [Gradio](https://www.gradio.app/)
+
+Model used:
+- [keisuke-miyako/all-MiniLM-L6-v2-onnx-fp16](https://huggingface.co/keisuke-miyako/all-MiniLM-L6-v2-onnx-fp16)
+
+This model converts text into semantic embeddings so the system can compare event descriptions with user interests.
+
+Similarity scoring is performed using cosine similarity via the dot product of normalized vectors.
+
+The Hugging Face API source code is located in [reference/huggingface_api](reference/huggingface_api).
+
+Additional information regarding setting up the recommendation engine is located in [REFERENCE.md](REFERENCE.md).
 
 ---
 
