@@ -15,7 +15,7 @@ def print_result(input: str, result: dict):
     print("=============================")
 
 async def example_1(): # Example usage to sort event announcements by tags or brief description
-    input = "I am a: professional saxophone player who wants to go to an event.", # Example source text
+    input = "I am a professional saxophone player who wants to go to an event.", # Example source text
     choices = [ # Example sentences to compare against the source
         "Basketball Tryouts Friday 6pm",
         "Live Jazz Night at the Student Union",
@@ -27,9 +27,8 @@ async def example_1(): # Example usage to sort event announcements by tags or br
     print_result(input, result)
 
 async def example_2(): # Example usage to check if an event is appropriate or not based on the title
-    input = "Hosted Event: Hosting a hazing club this weekend night!"
-    choices = ["This event follows university policies and is appropriate.", "This event violates university policies and is inappropriate."]
-
+    input = "Hosted Event: We are hosting a hazing event this Friday night!"
+    choices = ["safe university event, sport, or promotion", "hazing, harassment, or harm", "drinking, alcohol, or drug activity", "violent threat or assault", "weapon possession or weapon use", "adult sexual content", "spam or scam"]
     result = await engine.give_classification(input, choices)
     print_result(input, result)
 
