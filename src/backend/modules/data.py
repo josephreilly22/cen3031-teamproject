@@ -2,7 +2,7 @@
 import os
 from pymongo import MongoClient
 
-from key import decrypt
+from modules.key import decrypt
 
 # Variables
 MONGODB_URI = os.getenv("MONGODB_URI", "")
