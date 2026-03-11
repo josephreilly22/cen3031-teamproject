@@ -1,0 +1,5 @@
+# Add core dependencies here
+torch==2.8.0
+transformers==4.57.6
+onnxruntime>=1.16.0
+optimum[onnxruntime]>=1.14.0

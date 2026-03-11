@@ -37,6 +37,8 @@ This directory contains every feature as part of our back-end for our applicatio
 ### Recommendation Engine
 The event recommendation system is powered by Hugging Face models running inside a Hugging Face Space.
 
+This one specifically, allows us to sort feeds by similar title by user preferences or tags.
+
 Libraries used:
 - [Hugging Face Transformers](https://huggingface.co/docs/transformers/index) — model loading and tokenizer utilities
 - [ONNX Runtime](https://onnxruntime.ai/) — optimized inference engine for running the model
@@ -47,9 +49,22 @@ Libraries used:
 Model used:
 - [keisuke-miyako/all-MiniLM-L6-v2-onnx-fp16](https://huggingface.co/keisuke-miyako/all-MiniLM-L6-v2-onnx-fp16) — An optimized version of the MiniLM embedding model used for semantic similarity between event descriptions and user interests
 
-The Hugging Face API source code is located in [reference/huggingface_api](reference/huggingface_api).
+### Classification Engine
+The event classification system is powered by Hugging Face models running inside a Hugging Face Space.
 
-Additional information regarding setting up the recommendation engine is located in [REFERENCE.md](REFERENCE.md).
+This one specifically, allows us to automatically moderate innapropriate event content and perform other smart sorting operations.
+
+Libraries used:
+- [Hugging Face Transformers](https://huggingface.co/docs/transformers/index) — model loading and tokenizer utilities
+- [ONNX Runtime](https://onnxruntime.ai/) — optimized inference engine for running the model
+- [Optimum ONNX](https://huggingface.co/docs/optimum/index) — Hugging Face integration for ONNX models
+- [NumPy](https://numpy.org/) — numerical computation for vector operations
+- [Gradio](https://www.gradio.app/) — interface used to host the Hugging Face Space API
+
+Model used:
+- [MoritzLaurer/ModernBERT-base-zeroshot-v2.0](https://huggingface.co/MoritzLaurer/ModernBERT-base-zeroshot-v2.0) — a ModernBERT-based zero-shot classification model designed for fast and efficient classification
+
+Additional information regarding setting up the recommendation engine and classification engine are located in [REFERENCE.md](REFERENCE.md).
 
 ---
 
@@ -76,6 +91,8 @@ The app will be available at `http://localhost:3000`.
 cd src/backend
 # setup instructions coming soon
 ```
+
+Read [REFERENCE.md](REFERENCE.md) if you want to learn how to host your own recommendation/classification engine, otherwise feel free to use ours.
 
 ---
 
