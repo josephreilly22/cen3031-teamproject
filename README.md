@@ -41,6 +41,8 @@ The recommendation engine allows sorting feeds by similar title by user preferen
 
 The classification engine allows automatically moderating innapropriate event content and perform other smart classification operations.
 
+Both engines support batching, allowing efficient processing with multiple inputs in one request.
+
 Libraries used:
 - [Hugging Face Transformers](https://huggingface.co/docs/transformers/index) — model loading and tokenizer utilities
 - [ONNX Runtime](https://onnxruntime.ai/) — optimized inference engine for running the model
