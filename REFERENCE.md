@@ -8,8 +8,8 @@ The reference directory contains the directory containing the source code for th
 The API itself can be hosted on the "CPU basic", which is avaliable to everyone but has only 2 usable cores (it is recommended to set CPU_THREADS to 2).
 
 A "HF_TOKEN" into the header "Authorization" may be required if the Hugging Face Spaces is private.
-- If it is private, make sure to add a "HF_TOKEN" into the .env file.
-- Otherwise, use the free "HF_TOKEN" here for demo purposes (this is reversed so make sure to unreverse it): YckEWMGAbmSQKFQAvEyQSceXzUriVdMiLF_fh
+- If it is private, make sure to add a "HF_TOKEN" into the .env file (must start with hf_).
+- Otherwise, feel free to use the default .env configurations to use our hosted services.
 
 The two-in-one algorithm source code is located in this directory, which is hosted under the EventPlanner8 organization owned by our team.
 - Source code: [reference/huggingface_api](reference/huggingface_api)

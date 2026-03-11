@@ -5,8 +5,12 @@ import uuid
 import asyncio
 import aiohttp
 
+from modules.key import decrypt
+
 # Variables
-HF_TOKEN = os.getenv("HF_TOKEN", "YckEWMGAbmSQKFQAvEyQSceXzUriVdMiLF_fh"[::-1])
+HF_TOKEN = os.getenv("HF_TOKEN", "")
+if HF_TOKEN and not HF_TOKEN.startswith("hf_"): HF_TOKEN = decrypt(HF_TOKEN)
+
 PING_INTERVAL = 60 * 60 * 6
 
 headers = {"Authorization": f"Bearer {HF_TOKEN}", "Content-Type": "application/json"}

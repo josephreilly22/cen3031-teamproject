@@ -1,8 +1,8 @@
 import asyncio
 import json
     
-import modules.data as data
-import modules.engine as engine
+from modules.data import data
+from modules.engine import give_recommendation, give_classification
 
 def print_result(input: str, result: dict):
     highest = result.get("highest")
@@ -31,13 +31,13 @@ async def example_1(): # Example usage to sort event announcements by tags or br
         "Tax filing workshop for small business owners"
     ]
 
-    result = await engine.give_recommendation(input, choices)
+    result = await give_recommendation(input, choices)
     print_result(input, result)
 
 async def example_2(): # Example usage to check if an event is appropriate or not based on the title
     input = ["Hosted Event: We are hosting a hazing event this Friday night!", "Join us for a fun and safe university sports event this weekend!"] # Example event titles
     choices = ["safe university event, sport, or promotion", "hazing, harassment, or harm", "drinking, alcohol, or drug activity", "violent threat or assault", "weapon possession or weapon use", "adult sexual content", "spam or scam"]
-    result = await engine.give_classification(input, choices)
+    result = await give_classification(input, choices)
     print_result(input, result)
 
 async def main(): await asyncio.gather(example_1(), example_1(), example_1(), example_2())
