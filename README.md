@@ -101,6 +101,8 @@ Read [REFERENCE.md](REFERENCE.md) if you want to learn how to host your own reco
 
 ## Contributing
 
-This is a university group project for **CEN3031**. Please follow the team's branching and PR conventions when contributing.
+This is a student group project for **CEN3031**. Please follow the team's branching and PR conventions when contributing.
+
+Made with passion by the students at the Univeristy of Florida. ✨
 
 ---
