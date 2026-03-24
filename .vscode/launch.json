@@ -2,9 +2,12 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "Backend",
+      "name": "Full Stack",
       "type": "debugpy",
       "request": "launch",
+      "python": "${workspaceFolder}\\.venv\\Scripts\\python.exe",
+      "preLaunchTask": "Start Frontend",
+      "postDebugTask": "Stop Frontend",
       "module": "uvicorn",
       "args": [
         "main:app",
@@ -16,19 +19,6 @@
       ],
       "cwd": "${workspaceFolder}/src/backend",
       "console": "integratedTerminal"
-    },
-    {
-      "name": "Frontend",
-      "type": "node-terminal",
-      "request": "launch",
-      "command": "npm start",
-      "cwd": "${workspaceFolder}/src/frontend"
-    }
-  ],
-  "compounds": [
-    {
-      "name": "Full Stack",
-      "configurations": ["Backend", "Frontend"]
     }
   ]
 }
