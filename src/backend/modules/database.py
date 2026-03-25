@@ -3,9 +3,11 @@ import os
 from pymongo import MongoClient
 from pymongo.collection import Collection
 
+from modules.env import load_env
 from modules.key import decrypt
 
 # Variables
+load_env()
 MONGODB_URI = os.getenv("MONGODB_URI", "")
 if MONGODB_URI and not MONGODB_URI.startswith("mongodb+srv://"): MONGODB_URI = decrypt(MONGODB_URI)
 

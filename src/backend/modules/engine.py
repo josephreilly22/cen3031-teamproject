@@ -5,9 +5,11 @@ import uuid
 import asyncio
 import aiohttp
 
+from modules.env import load_env
 from modules.key import decrypt
 
 # Variables
+load_env()
 HF_TOKEN = os.getenv("HF_TOKEN", "")
 if HF_TOKEN and not HF_TOKEN.startswith("hf_"): HF_TOKEN = decrypt(HF_TOKEN)
 
