@@ -43,7 +43,7 @@ function LoginPage() {
         <h2 className="login-heading">Welcome back</h2>
         <p className="login-sub">Sign in to your account</p>
 
-        {error && <p className="login-error">{error}</p>}
+        {error && <p className="login-error">⚠ {error}</p>}
 
         <form className="login-form" onSubmit={handleSubmit}>
           <div className="form-group">

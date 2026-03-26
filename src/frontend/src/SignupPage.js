@@ -51,7 +51,7 @@ function SignupPage() {
         <h2 className="signup-heading">Create an account</h2>
         <p className="signup-sub">Join the community today</p>
 
-        {error && <p className="signup-error">{error}</p>}
+        {error && <p className="signup-error">⚠ {error}</p>}
 
         <form className="signup-form" onSubmit={handleSubmit}>
           <div className="form-row">
