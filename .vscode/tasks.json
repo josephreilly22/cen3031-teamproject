@@ -15,7 +15,9 @@
       "presentation": {
         "reveal": "never",
         "focus": false,
-        "panel": "dedicated"
+        "panel": "dedicated",
+        "showReuseMessage": false,
+        "close": true
       },
       "problemMatcher": []
     },
@@ -33,7 +35,9 @@
       "presentation": {
         "reveal": "never",
         "focus": false,
-        "panel": "dedicated"
+        "panel": "dedicated",
+        "showReuseMessage": false,
+        "close": true
       },
       "problemMatcher": []
     }

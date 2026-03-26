@@ -3,7 +3,9 @@ $browserPidFile = Join-Path $env:TEMP "cen3031-teamproject-browser.pid"
 $browserProfileDir = Join-Path $env:TEMP "cen3031-teamproject-browser-profile"
 
 if (-not (Test-Path $pidFile)) {
-  $null = $true
+  Remove-Item $browserPidFile -ErrorAction SilentlyContinue
+  Remove-Item $browserProfileDir -Recurse -Force -ErrorAction SilentlyContinue
+  exit 0
 }
 
 $frontendPid = (Get-Content $pidFile | Select-Object -First 1).Trim()
