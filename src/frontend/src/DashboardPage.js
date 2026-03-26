@@ -8,7 +8,7 @@ function DashboardPage() {
     <div className="dashboard">
       <nav className="dashboard-navbar">
         <div className="logo" onClick={() => navigate('/')}>
-          <span className="logo-icon">🗓️</span>
+          <img src={require('./assets/EventPlannerIcon.png')} alt="Event Planner" className="logo-icon" />
           <span className="logo-text">Event Planners</span>
         </div>
         <span className="navbar-title">Dashboard</span>

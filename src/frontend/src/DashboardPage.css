@@ -33,7 +33,8 @@
 }
 
 .logo-icon {
-  font-size: 1.5rem;
+  height: 32px;
+  width: auto;
 }
 
 .nav-buttons {

@@ -49,8 +49,9 @@
   margin-bottom: 28px;
 }
 
-.login-logo span:first-child {
-  font-size: 1.4rem;
+.login-logo-icon {
+  height: 28px;
+  width: auto;
 }
 
 .login-heading {

@@ -49,8 +49,9 @@
   margin-bottom: 28px;
 }
 
-.signup-logo span:first-child {
-  font-size: 1.4rem;
+.signup-logo-icon {
+  height: 28px;
+  width: auto;
 }
 
 .signup-heading {

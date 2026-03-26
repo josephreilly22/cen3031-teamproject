@@ -27,7 +27,7 @@ function HostRegistrationPage() {
       {/* Navbar */}
       <nav className="navbar">
         <div className="logo" onClick={() => navigate('/')} style={{ cursor: 'pointer' }}>
-          <span className="logo-icon">🗓️</span>
+          <img src={require('./assets/EventPlannerIcon.png')} alt="Event Planner" className="logo-icon" />
           <span className="logo-text">Event Planners</span>
         </div>
         <div className="nav-buttons">
