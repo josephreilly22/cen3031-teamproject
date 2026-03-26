@@ -111,24 +111,24 @@ function HostRegistrationPage() {
           <div className="success-box">
             <span className="success-icon">OK</span>
             <h2>Application Submitted!</h2>
-            <p>Thanks, {`${form.firstName} ${form.lastName}`.trim()}! We'll review your application and reach out to <strong>{form.email}</strong> soon.</p>
+            <p>Thanks, {`${form.firstName} ${form.lastName}`.trim()}! We&apos;ll review your application and reach out to <strong>{form.email}</strong> soon.</p>
             <button className="btn-secondary" onClick={() => navigate('/')}>Back to Home</button>
           </div>
         )}
 
         <div className="cards host-cards">
           <div className="card">
-            <div className="card-icon icon-blue">{'\u{1F4C8}'}</div>
+            <div className="card-icon icon-blue">📈</div>
             <h3>Increase Attendance</h3>
-            <p>Tap into our platform's audience and reach more attendees than ever before. Our discovery tools put your events in front of the right people at the right time.</p>
+            <p>Tap into our platform&apos;s audience and reach more attendees than ever before. Our discovery tools put your events in front of the right people at the right time.</p>
           </div>
           <div className="card">
-            <div className="card-icon icon-green">{'\u{1F6E1}\uFE0F'}</div>
+            <div className="card-icon icon-green">🛡️</div>
             <h3>Security in Mind</h3>
             <p>Our host verification process ensures every event is legitimate, protecting your reputation and our community from fraudulent listings and unverified organizers.</p>
           </div>
           <div className="card">
-            <div className="card-icon icon-pink">{'\u{1F39F}\uFE0F'}</div>
+            <div className="card-icon icon-pink">🎟️</div>
             <h3>Full Event Control</h3>
             <p>Manage RSVPs, post updates, and customize your event page, all from one intuitive dashboard built with hosts in mind.</p>
           </div>

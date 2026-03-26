@@ -22,22 +22,22 @@ function AboutPage() {
         </p>
 
         <div className="hero-buttons about-actions">
-          <button className="btn-primary about-back-btn" onClick={() => navigate('/')}>{'\u2190 Go Back'}</button>
+          <button className="btn-primary about-back-btn" onClick={() => navigate('/')}>← Go Back</button>
         </div>
 
         <div className="cards" style={{ marginBottom: '56px' }}>
           <div className="card">
-            <div className="card-icon icon-pink">{'\u2B50'}</div>
+            <div className="card-icon icon-pink">⭐</div>
             <h3>Personalized Suggestions</h3>
             <p>Our machine learning algorithm learns what you enjoy and surfaces events that actually match your interests, not just what&apos;s nearby.</p>
           </div>
           <div className="card">
-            <div className="card-icon icon-blue">{'\u{1F4CD}'}</div>
+            <div className="card-icon icon-blue">📍</div>
             <h3>Location-Based Events</h3>
             <p>Discover what&apos;s happening around you. We surface events close to your location so you never miss something great in your area.</p>
           </div>
           <div className="card">
-            <div className="card-icon icon-green">{'\u{1F6E1}\uFE0F'}</div>
+            <div className="card-icon icon-green">🛡️</div>
             <h3>Security in Mind</h3>
             <p>Every host goes through a verification process. Our moderation system uses AI to keep listings legitimate and our community safe.</p>
           </div>

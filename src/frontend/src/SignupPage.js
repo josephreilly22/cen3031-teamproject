@@ -44,15 +44,15 @@ function SignupPage() {
   return (
     <div className="signup-page">
       <div className="signup-card">
-        <button className="back-btn" onClick={() => navigate('/')}>{'\u2190 Back'}</button>
+        <button className="back-btn" onClick={() => navigate('/')}>← Back</button>
         <div className="signup-logo">
-          <img src={require('./assets/EventPlannerIcon.png')} alt="Event Planner" className="signup-logo-icon" />
+          <img src="/logo.png" alt="Event Planner" className="signup-logo-icon" />
           <span className="signup-logo-text">Event Planners</span>
         </div>
         <h2 className="signup-heading">Create an account</h2>
         <p className="signup-sub">Join the community today</p>
 
-        {error && <p className="signup-error">{'\u26A0'} {error}</p>}
+        {error && <p className="signup-error">⚠ {error}</p>}
 
         <form className="signup-form" onSubmit={handleSubmit}>
           <div className="form-row">
@@ -97,7 +97,7 @@ function SignupPage() {
             <input
               type="password"
               id="password"
-              placeholder={'\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022'}
+              placeholder="••••••••"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
@@ -109,7 +109,7 @@ function SignupPage() {
             <input
               type="password"
               id="confirmPassword"
-              placeholder={'\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022'}
+              placeholder="••••••••"
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
               required

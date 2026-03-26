@@ -1,24 +1,33 @@
+import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './DashboardPage.css';
+import SignedInNavbar from './SignedInNavbar';
+import { getAuthSession } from './authSession';
 
 function DashboardPage() {
   const navigate = useNavigate();
+  const session = getAuthSession();
+
+  useEffect(() => {
+    if (!session.signedIn) {
+      navigate('/login');
+    }
+  }, [navigate, session.signedIn]);
+
+  if (!session.signedIn) {
+    return null;
+  }
 
   return (
     <div className="dashboard">
-      <nav className="dashboard-navbar">
-        <div className="logo" onClick={() => navigate('/')}>
-          <img src={require('./assets/EventPlannerIcon.png')} alt="Event Planner" className="logo-icon" />
-          <span className="logo-text">Event Planners</span>
-        </div>
-        <span className="navbar-title">Dashboard</span>
-        <div className="nav-buttons">
-          <button className="nav-cta" onClick={() => navigate('/profile')}>Profile</button>
-          <button className="nav-logout" onClick={() => navigate('/')}>Log Out</button>
-        </div>
-      </nav>
+      <SignedInNavbar title="Dashboard" actionLabel="Profile" actionPath="/profile" />
 
-      <main className="dashboard-content">
+      <main className="dashboard-content dashboard-placeholder-content">
+        <section className="dashboard-placeholder-card">
+          <h1>Dashboard</h1>
+          <p>Signed in as <strong>{session.email}</strong>.</p>
+          <p className="dashboard-placeholder-note">This page is still work in progress.</p>
+        </section>
       </main>
     </div>
   );

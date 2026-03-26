@@ -26,15 +26,23 @@
   display: flex;
   align-items: center;
   gap: 10px;
-  font-size: 1.15rem;
-  font-weight: 700;
   color: #1a1a2e;
-  cursor: pointer;
 }
 
 .logo-icon {
   height: 32px;
   width: auto;
+}
+
+.signed-in-logo {
+  cursor: default;
+}
+
+.logo-text {
+  font-size: 1.24rem;
+  font-weight: 800;
+  line-height: 1;
+  color: #3b3fa0;
 }
 
 .nav-buttons {
@@ -45,19 +53,19 @@
 
 .nav-cta {
   background: none;
-  border: 1.5px solid #1a1a2e;
+  border: 1.5px solid #3b3fa0;
   border-radius: 50px;
   padding: 10px 24px;
   cursor: pointer;
   font-size: 0.92rem;
   font-weight: 600;
-  color: #1a1a2e;
+  color: #3b3fa0;
   font-family: inherit;
   transition: background 0.2s, color 0.2s;
 }
 
 .nav-cta:hover {
-  background: #1a1a2e;
+  background: #3b3fa0;
   color: #fff;
 }
 
@@ -82,12 +90,45 @@
   position: absolute;
   left: 50%;
   transform: translateX(-50%);
-  font-size: 1.15rem;
-  font-weight: 700;
+  font-size: 1.2rem;
+  font-weight: 800;
   color: #1a1a2e;
   letter-spacing: 0.01em;
 }
 
 .dashboard-content {
   padding: 48px 52px;
+}
+
+.dashboard-placeholder-content {
+  display: flex;
+  justify-content: center;
+}
+
+.dashboard-placeholder-card {
+  width: 100%;
+  max-width: 560px;
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-radius: 24px;
+  padding: 44px 40px;
+  text-align: center;
+}
+
+.dashboard-placeholder-card h1 {
+  font-size: 2rem;
+  font-weight: 800;
+  color: #1a1a2e;
+  margin-bottom: 16px;
+}
+
+.dashboard-placeholder-card p {
+  color: #555;
+  font-size: 1rem;
+  line-height: 1.65;
+}
+
+.dashboard-placeholder-note {
+  margin-top: 10px;
 }
