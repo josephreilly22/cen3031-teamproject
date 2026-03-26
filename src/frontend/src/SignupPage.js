@@ -21,7 +21,8 @@ function SignupPage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          username: `${firstName} ${lastName}`.trim(),
+          first_name: firstName,
+          last_name: lastName,
           email,
           password,
           confirm_password: confirmPassword,
@@ -43,7 +44,7 @@ function SignupPage() {
   return (
     <div className="signup-page">
       <div className="signup-card">
-        <button className="back-btn" onClick={() => navigate('/login')}>← Back</button>
+        <button className="back-btn" onClick={() => navigate('/')}>{'\u2190 Back'}</button>
         <div className="signup-logo">
           <img src={require('./assets/EventPlannerIcon.png')} alt="Event Planner" className="signup-logo-icon" />
           <span className="signup-logo-text">Event Planners</span>
@@ -51,7 +52,7 @@ function SignupPage() {
         <h2 className="signup-heading">Create an account</h2>
         <p className="signup-sub">Join the community today</p>
 
-        {error && <p className="signup-error">⚠ {error}</p>}
+        {error && <p className="signup-error">{'\u26A0'} {error}</p>}
 
         <form className="signup-form" onSubmit={handleSubmit}>
           <div className="form-row">
@@ -96,7 +97,7 @@ function SignupPage() {
             <input
               type="password"
               id="password"
-              placeholder="••••••••"
+              placeholder={'\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022'}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
@@ -108,7 +109,7 @@ function SignupPage() {
             <input
               type="password"
               id="confirmPassword"
-              placeholder="••••••••"
+              placeholder={'\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022'}
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
               required

@@ -10,7 +10,8 @@ app = FastAPI()
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_credentials=False, allow_methods=["*"], allow_headers=["*"])
 
 class SignUpRequest(BaseModel):
-    username: str
+    first_name: str
+    last_name: str
     email: str
     password: str
     confirm_password: str
@@ -26,7 +27,7 @@ def root(): return {"status": "ok"}
 @app.post("/signup")
 def signup(body: SignUpRequest):
     try:
-        return sign_up(body.username, body.email, body.password, body.confirm_password)
+        return sign_up(body.first_name, body.last_name, body.email, body.password, body.confirm_password)
     except ValueError as e:
         return {"success": False, "message": str(e)}
 

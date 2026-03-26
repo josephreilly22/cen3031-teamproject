@@ -43,15 +43,20 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 1.1rem;
-  font-weight: 700;
-  color: #1a1a2e;
   margin-bottom: 28px;
 }
 
 .login-logo-icon {
   height: 28px;
   width: auto;
+}
+
+.login-logo-text {
+  font-size: 1.24rem;
+  font-weight: 800;
+  line-height: 1;
+  font-family: inherit;
+  color: #3b3fa0;
 }
 
 .login-heading {

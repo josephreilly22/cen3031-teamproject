@@ -11,10 +11,10 @@ def run_t1():
     print("T1: Verify a new user can create an account with valid registration details.")
     try:
         database("Users").remove_document("johndoe@email.com")
-        result = sign_up("john_doe", "johndoe@email.com", "Password123!", "Password123!")
-        print("Input: username=john_doe, email=johndoe@email.com, password=Password123!")
+        result = sign_up("John", "Doe", "johndoe@email.com", "Password123!", "Password123!")
+        print("Input: first_name=John, last_name=Doe, email=johndoe@email.com, password=Password123!")
         if result.get("success"):
-            print(f"Actual Result: Account created for {result['user']['username']} with redirect to {result['redirect']}.")
+            print(f"Actual Result: Account created for {result['user']['first_name']} {result['user']['last_name']} with redirect to {result['redirect']}.")
         else:
             print(f"Actual Result: {result.get('message')}")
         print("Status: Pass" if result.get("success") else "Status: Fail")
@@ -90,8 +90,8 @@ def run_t6():
     print("T6: Verify sign up is rejected when password and confirm password do not match.")
     try:
         database("Users").remove_document("janedoe@email.com")
-        result = sign_up("jane_doe", "janedoe@email.com", "Password123!", "Password124!")
-        print("Input: username=jane_doe, email=janedoe@email.com, password=Password123!, confirm_password=Password124!")
+        result = sign_up("Jane", "Doe", "janedoe@email.com", "Password123!", "Password124!")
+        print("Input: first_name=Jane, last_name=Doe, email=janedoe@email.com, password=Password123!, confirm_password=Password124!")
         print(f"Actual Result: {result.get('message')}")
         print("Status: Pass" if not result.get("success") else "Status: Fail")
     except Exception as error:
@@ -102,9 +102,9 @@ def run_t6():
 def run_t7():
     print("T7: Verify sign up is rejected when email is already registered.")
     try:
-        sign_up("john_doe", "johndoe@email.com", "Password123!", "Password123!")
-        result = sign_up("john_doe_2", "johndoe@email.com", "Password123!", "Password123!")
-        print("Input: username=john_doe_2, email=johndoe@email.com, password=Password123!")
+        sign_up("John", "Doe", "johndoe@email.com", "Password123!", "Password123!")
+        result = sign_up("John", "Doe Two", "johndoe@email.com", "Password123!", "Password123!")
+        print("Input: first_name=John, last_name=Doe Two, email=johndoe@email.com, password=Password123!")
         print(f"Actual Result: {result.get('message')}")
         print("Status: Pass" if not result.get("success") else "Status: Fail")
     except Exception as error:

@@ -2,12 +2,14 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './App.css';
 import './HostRegistrationPage.css';
+import SiteNavbar from './SiteNavbar';
 
 function HostRegistrationPage() {
   const navigate = useNavigate();
   const [submitted, setSubmitted] = useState(false);
   const [form, setForm] = useState({
-    name: '',
+    firstName: '',
+    lastName: '',
     email: '',
     organization: '',
     message: '',
@@ -24,18 +26,8 @@ function HostRegistrationPage() {
 
   return (
     <div className="app">
-      {/* Navbar */}
-      <nav className="navbar">
-        <div className="logo" onClick={() => navigate('/')} style={{ cursor: 'pointer' }}>
-          <img src={require('./assets/EventPlannerIcon.png')} alt="Event Planner" className="logo-icon" />
-          <span className="logo-text">Event Planners</span>
-        </div>
-        <div className="nav-buttons">
-          <button className="nav-cta" onClick={() => navigate('/login')}>Login</button>
-        </div>
-      </nav>
+      <SiteNavbar primaryLabel="Back to Home" primaryPath="/" />
 
-      {/* Hero Section */}
       <section className="hero">
         <h1 className="hero-heading">
           Host your next<br />
@@ -52,27 +44,39 @@ function HostRegistrationPage() {
           <form className="host-form" onSubmit={handleSubmit}>
             <div className="form-row">
               <div className="form-group">
-                <label>Full Name</label>
+                <label>First Name</label>
                 <input
                   type="text"
-                  name="name"
-                  placeholder="Jane Doe"
-                  value={form.name}
+                  name="firstName"
+                  placeholder="Jane"
+                  value={form.firstName}
                   onChange={handleChange}
                   required
                 />
               </div>
               <div className="form-group">
-                <label>Email Address</label>
+                <label>Last Name</label>
                 <input
-                  type="email"
-                  name="email"
-                  placeholder="jane@example.com"
-                  value={form.email}
+                  type="text"
+                  name="lastName"
+                  placeholder="Doe"
+                  value={form.lastName}
                   onChange={handleChange}
                   required
                 />
               </div>
+            </div>
+
+            <div className="form-group full-width">
+              <label>Email Address</label>
+              <input
+                type="email"
+                name="email"
+                placeholder="jane@example.com"
+                value={form.email}
+                onChange={handleChange}
+                required
+              />
             </div>
 
             <div className="form-group full-width">
@@ -105,29 +109,28 @@ function HostRegistrationPage() {
           </form>
         ) : (
           <div className="success-box">
-            <span className="success-icon">✅</span>
+            <span className="success-icon">OK</span>
             <h2>Application Submitted!</h2>
-            <p>Thanks, {form.name}! We'll review your application and reach out to <strong>{form.email}</strong> soon.</p>
+            <p>Thanks, {`${form.firstName} ${form.lastName}`.trim()}! We'll review your application and reach out to <strong>{form.email}</strong> soon.</p>
             <button className="btn-secondary" onClick={() => navigate('/')}>Back to Home</button>
           </div>
         )}
 
-        {/* Feature Cards */}
         <div className="cards host-cards">
           <div className="card">
-            <div className="card-icon icon-blue">📈</div>
+            <div className="card-icon icon-blue">{'\u{1F4C8}'}</div>
             <h3>Increase Attendance</h3>
             <p>Tap into our platform's audience and reach more attendees than ever before. Our discovery tools put your events in front of the right people at the right time.</p>
           </div>
           <div className="card">
-            <div className="card-icon icon-green">🛡️</div>
+            <div className="card-icon icon-green">{'\u{1F6E1}\uFE0F'}</div>
             <h3>Security in Mind</h3>
             <p>Our host verification process ensures every event is legitimate, protecting your reputation and our community from fraudulent listings and unverified organizers.</p>
           </div>
           <div className="card">
-            <div className="card-icon icon-pink">🎛️</div>
+            <div className="card-icon icon-pink">{'\u{1F39F}\uFE0F'}</div>
             <h3>Full Event Control</h3>
-            <p>Manage RSVPs, post updates, and customize your event page — all from one intuitive dashboard built with hosts in mind.</p>
+            <p>Manage RSVPs, post updates, and customize your event page, all from one intuitive dashboard built with hosts in mind.</p>
           </div>
         </div>
       </section>

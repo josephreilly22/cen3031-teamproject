@@ -1,4 +1,12 @@
-/* ── About Section ── */
+.about-actions {
+  margin-bottom: 64px;
+}
+
+.about-back-btn {
+  padding: 15px 34px;
+  font-size: 1rem;
+}
+
 .about-section {
   max-width: 660px;
   background: rgba(255, 255, 255, 0.6);
@@ -23,16 +31,9 @@
   line-height: 1.75;
 }
 
-/* ── CTA Row ── */
-.about-cta {
-  display: flex;
-  gap: 16px;
-  margin-bottom: 40px;
-}
-
-/* ── Footer note ── */
 .about-footer {
-  color: #999;
-  font-size: 0.88rem;
+  color: #3b3fa0;
+  font-size: 0.95rem;
+  font-weight: 600;
   margin-top: 8px;
 }

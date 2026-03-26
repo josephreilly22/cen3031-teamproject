@@ -24,6 +24,7 @@
   flex-direction: column;
   gap: 6px;
   flex: 1;
+  min-width: 0;
 }
 
 .form-group.full-width {
@@ -38,6 +39,8 @@
 
 .form-group input,
 .form-group textarea {
+  box-sizing: border-box;
+  width: 100%;
   border: 1.5px solid #d0d4e8;
   border-radius: 12px;
   padding: 12px 16px;
