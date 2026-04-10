@@ -1,23 +1,47 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './OnboardingPage.css';
+import './ProfilePage.css';
 import SignedInNavbar from './SignedInNavbar';
+import { setOnboardingComplete, getAuthSession } from './authSession';
 
 function OnboardingPage() {
   const navigate = useNavigate();
+  const session = getAuthSession();
   const [interests, setInterests] = useState('');
   const [eventType, setEventType] = useState(null); // 'on-campus' | 'off-campus' | 'both'
   const [saved, setSaved] = useState(false);
+  const [error, setError] = useState('');
 
-  const handleSave = () => {
-    // TODO: persist to backend
+  const handleSave = async () => {
+    if (!eventType) {
+      setError('Please select an event preference.');
+      return;
+    }
+    setError('');
+    try {
+      const res = await fetch('http://localhost:8000/profile', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: session.email, interests, event_type: eventType }),
+      });
+      const data = await res.json();
+      if (!data.success) {
+        setError(data.message || 'Failed to save.');
+        return;
+      }
+    } catch {
+      setError('Could not connect to server.');
+      return;
+    }
+    setOnboardingComplete();
     setSaved(true);
-    setTimeout(() => setSaved(false), 2500);
+    setTimeout(() => navigate('/dashboard'), 1000);
   };
 
   return (
     <div className="onboarding">
-      <SignedInNavbar title="Onboarding" actionLabel="Dashboard" actionPath="/dashboard" />
+      <SignedInNavbar title="Onboarding" />
 
       <main className="onboarding-content">
 
@@ -99,13 +123,12 @@ function OnboardingPage() {
           </button>
         </div>
 
+        {error && <p className="profile-error">{error}</p>}
+
         {/* Save Button */}
         <div className="onboarding-actions">
           <button className="save-btn" onClick={handleSave}>
             {saved ? '✓ Saved!' : 'Save Preferences'}
-          </button>
-          <button className="skip-btn" onClick={() => navigate('/dashboard')}>
-            Skip for now
           </button>
         </div>
 

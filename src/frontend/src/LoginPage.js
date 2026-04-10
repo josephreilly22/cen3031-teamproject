@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './LoginPage.css';
-import { getAuthSession, setAuthSession } from './authSession';
+import { getAuthSession, setAuthSession, setUserRole, setUserName } from './authSession';
 
 function LoginPage() {
   const navigate = useNavigate();
@@ -30,7 +30,10 @@ function LoginPage() {
       const data = await res.json();
       if (data.success) {
         setAuthSession(email, password);
-        navigate(data.redirect || '/dashboard');
+        setUserRole(data.user?.role || 'normal');
+        setUserName(data.user?.first_name || '', data.user?.last_name || '');
+        const session = getAuthSession();
+        navigate(session.onboardingComplete ? '/dashboard' : '/onboarding');
       } else {
         setError(data.message || 'Login failed');
       }

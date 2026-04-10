@@ -1,34 +1,71 @@
-.profile-content {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 28px;
-}
-
-.profile-card {
-  width: 100%;
-  max-width: 560px;
-  background: rgba(255, 255, 255, 0.7);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border-radius: 24px;
-  padding: 44px 40px;
+.profile-loading {
   text-align: center;
+  color: #888;
+  font-size: 0.95rem;
+  padding: 40px 0;
 }
 
-.profile-card h1 {
-  font-size: 2rem;
-  font-weight: 800;
-  color: #1a1a2e;
-  margin-bottom: 16px;
+.profile-error {
+  color: #c0392b;
+  font-size: 0.9rem;
+  text-align: right;
+  margin-top: -8px;
 }
 
-.profile-card p {
-  color: #555;
-  font-size: 1rem;
-  line-height: 1.65;
+/* Delete account card */
+.delete-account-card {
+  border: 1.5px solid rgba(192, 57, 43, 0.2);
 }
 
-.profile-note {
-  margin-top: 10px;
+.icon-red {
+  background: #ffd5d0;
+}
+
+.delete-btn {
+  background: none;
+  color: #c0392b;
+  border: 1.5px solid #c0392b;
+  border-radius: 50px;
+  padding: 10px 24px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background 0.18s, color 0.18s;
+}
+
+.delete-btn:hover {
+  background: #c0392b;
+  color: #fff;
+}
+
+.delete-confirm-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.delete-confirm-text {
+  font-size: 0.9rem;
+  color: #c0392b;
+  font-weight: 500;
+}
+
+.delete-cancel-btn {
+  background: none;
+  color: #888;
+  border: 1.5px solid #ccc;
+  border-radius: 50px;
+  padding: 10px 20px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  transition: border-color 0.18s, color 0.18s;
+}
+
+.delete-cancel-btn:hover {
+  border-color: #888;
+  color: #444;
 }

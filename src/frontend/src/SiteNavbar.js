@@ -3,9 +3,9 @@ import './App.css';
 import { getAuthSession } from './authSession';
 
 function SiteNavbar({
-  primaryLabel = 'Register as a host',
-  primaryPath = '/hostregistration',
-  secondaryLabel = 'Login',
+  primaryLabel,
+  primaryPath,
+  secondaryLabel = 'Sign In',
   secondaryPath = '/login',
 }) {
   const navigate = useNavigate();
@@ -21,7 +21,9 @@ function SiteNavbar({
         <span className="logo-text">Event Planners</span>
       </div>
       <div className="nav-buttons">
-        <button className="btn-secondary nav-cta" onClick={() => navigate(primaryPath)}>{primaryLabel}</button>
+        {primaryLabel && primaryPath && (
+          <button className="btn-secondary nav-cta" onClick={() => navigate(primaryPath)}>{primaryLabel}</button>
+        )}
         <button className="nav-register" onClick={() => navigate(resolvedSecondaryPath)}>{resolvedSecondaryLabel}</button>
       </div>
     </nav>

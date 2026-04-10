@@ -1,9 +1,10 @@
 import { useNavigate } from 'react-router-dom';
 import './DashboardPage.css';
-import { clearAuthSession } from './authSession';
+import { clearAuthSession, getAuthSession } from './authSession';
 
 function SignedInNavbar({ title, actionLabel, actionPath, actions }) {
   const navigate = useNavigate();
+  const { role } = getAuthSession();
 
   const handleLogout = () => {
     clearAuthSession();
@@ -23,7 +24,13 @@ function SignedInNavbar({ title, actionLabel, actionPath, actions }) {
         {buttons.map(({ label, path }) => (
           <button key={path} className="nav-cta" onClick={() => navigate(path)}>{label}</button>
         ))}
-        <button className="nav-logout" onClick={handleLogout}>Log Out</button>
+        {(role === 'event-host' || role === 'admin') && (
+          <button className="nav-cta" onClick={() => navigate('/create-event')}>Create Event</button>
+        )}
+        {role === 'admin' && (
+          <button className="nav-cta" onClick={() => navigate('/event-registrations')}>View Registrations</button>
+        )}
+        <button className="nav-logout" onClick={handleLogout}>Sign Out</button>
       </div>
     </nav>
   );

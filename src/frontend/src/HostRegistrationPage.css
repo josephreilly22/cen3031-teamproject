@@ -69,6 +69,12 @@
   margin-top: 6px;
 }
 
+.host-error {
+  color: #c0392b;
+  font-size: 0.9rem;
+  margin-top: -6px;
+}
+
 /* ── Success State ── */
 .success-box {
   display: flex;

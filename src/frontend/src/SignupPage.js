@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './SignupPage.css';
-import { setAuthSession } from './authSession';
+import { setAuthSession, setUserRole, setUserName } from './authSession';
 
 function SignupPage() {
   const navigate = useNavigate();
@@ -32,7 +32,9 @@ function SignupPage() {
       const data = await res.json();
       if (data.success) {
         setAuthSession(email, password);
-        navigate(data.redirect || '/dashboard');
+        setUserRole('normal');
+        setUserName(firstName, lastName);
+        navigate('/onboarding');
       } else {
         setError(data.message || 'Signup failed');
       }

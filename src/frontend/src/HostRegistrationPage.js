@@ -3,14 +3,17 @@ import { useNavigate } from 'react-router-dom';
 import './App.css';
 import './HostRegistrationPage.css';
 import SiteNavbar from './SiteNavbar';
+import { getAuthSession } from './authSession';
 
 function HostRegistrationPage() {
   const navigate = useNavigate();
+  const session = getAuthSession();
   const [submitted, setSubmitted] = useState(false);
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
   const [form, setForm] = useState({
     firstName: '',
     lastName: '',
-    email: '',
     organization: '',
     message: '',
   });
@@ -19,14 +22,38 @@ function HostRegistrationPage() {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    setSubmitted(true);
+    setError('');
+    setLoading(true);
+    try {
+      const res = await fetch('http://localhost:8000/host-registration', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: session.email,
+          first_name: form.firstName,
+          last_name: form.lastName,
+          organization: form.organization,
+          message: form.message,
+        }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setSubmitted(true);
+      } else {
+        setError(data.message || 'Submission failed.');
+      }
+    } catch {
+      setError('Could not connect to server.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <div className="app">
-      <SiteNavbar primaryLabel="Back to Home" primaryPath="/" />
+      <SiteNavbar primaryLabel="← Back to Onboarding" primaryPath="/onboarding" />
 
       <section className="hero">
         <h1 className="hero-heading">
@@ -68,18 +95,6 @@ function HostRegistrationPage() {
             </div>
 
             <div className="form-group full-width">
-              <label>Email Address</label>
-              <input
-                type="email"
-                name="email"
-                placeholder="jane@example.com"
-                value={form.email}
-                onChange={handleChange}
-                required
-              />
-            </div>
-
-            <div className="form-group full-width">
               <label>Organization / Event Name</label>
               <input
                 type="text"
@@ -103,16 +118,18 @@ function HostRegistrationPage() {
               />
             </div>
 
-            <button type="submit" className="btn-primary apply-btn">
-              Apply for Event Host →
+            {error && <p className="host-error">{error}</p>}
+
+            <button type="submit" className="btn-primary apply-btn" disabled={loading}>
+              {loading ? 'Submitting...' : 'Apply for Event Host →'}
             </button>
           </form>
         ) : (
           <div className="success-box">
             <span className="success-icon">✅</span>
             <h2>Application Submitted!</h2>
-            <p>Thanks, {`${form.firstName} ${form.lastName}`.trim()}! We&apos;ll review your application and reach out to <strong>{form.email}</strong> soon.</p>
-            <button className="btn-secondary" onClick={() => navigate('/')}>Back to Home</button>
+            <p>Thanks, {form.firstName}! Your request is pending review. We&apos;ll notify you once an admin approves your application.</p>
+            <button className="btn-secondary" onClick={() => navigate('/dashboard')}>Back to Dashboard</button>
           </div>
         )}
 
