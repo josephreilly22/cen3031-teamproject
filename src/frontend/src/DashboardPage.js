@@ -20,7 +20,7 @@ function DashboardPage() {
 
   return (
     <div className="dashboard">
-      <SignedInNavbar title="Dashboard" actionLabel="Profile" actionPath="/profile" />
+      <SignedInNavbar title="Dashboard" actions={[{ label: 'Onboarding', path: '/onboarding' }, { label: 'Profile', path: '/profile' }]} />
 
       <main className="dashboard-content dashboard-placeholder-content">
         <section className="dashboard-placeholder-card">
