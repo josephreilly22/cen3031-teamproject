@@ -27,11 +27,30 @@ function CreateEventPage() {
     e.preventDefault();
     setError('');
     setLoading(true);
-    // TODO: POST to /events endpoint
-    setTimeout(() => {
+    try {
+      const res = await fetch('http://localhost:8000/events', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          owner_email: session.email,
+          title: form.title,
+          host: form.host,
+          date: form.date,
+          location: form.location,
+          description: form.description,
+        }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setSubmitted(true);
+      } else {
+        setError(data.message || 'Failed to create event.');
+      }
+    } catch {
+      setError('Could not connect to server.');
+    } finally {
       setLoading(false);
-      setSubmitted(true);
-    }, 600);
+    }
   };
 
   if (submitted) {

@@ -68,9 +68,11 @@ function OnboardingPage() {
             className="interests-input"
             placeholder="e.g. live music, hackathons, cooking, film screenings, community volunteering..."
             value={interests}
-            onChange={(e) => setInterests(e.target.value)}
+            onChange={(e) => setInterests(e.target.value.slice(0, 256))}
             rows={4}
+            maxLength={256}
           />
+          <p className="interests-char-count">{interests.length} / 256</p>
         </div>
 
         {/* Event Location Preference */}

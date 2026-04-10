@@ -1,0 +1,129 @@
+.my-events-page {
+  min-height: 100vh;
+  background: radial-gradient(
+    ellipse at 0% 50%,
+    #c5d9f5 0%,
+    #eff0f8 35%,
+    #f7d4ec 70%,
+    #f9c8e8 100%
+  );
+}
+
+.my-events-content {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 52px 32px 80px;
+}
+
+.my-events-header {
+  display: flex;
+  align-items: baseline;
+  gap: 20px;
+  margin-bottom: 36px;
+  flex-wrap: wrap;
+}
+
+.my-events-heading {
+  font-size: 2.2rem;
+  font-weight: 800;
+  color: #1a1a2e;
+}
+
+.my-events-sub {
+  color: #888;
+  font-size: 0.97rem;
+  flex: 1;
+}
+
+.my-events-create-btn {
+  background: #3b3fa0;
+  color: #fff;
+  border: none;
+  border-radius: 50px;
+  padding: 11px 24px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background 0.2s;
+  white-space: nowrap;
+}
+
+.my-events-create-btn:hover {
+  background: #2e3280;
+}
+
+.my-events-loading {
+  text-align: center;
+  color: #888;
+  padding: 60px 0;
+  font-size: 0.97rem;
+}
+
+.my-events-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  padding: 80px 0;
+  text-align: center;
+  color: #888;
+  font-size: 0.97rem;
+}
+
+.my-events-empty-icon {
+  font-size: 2.8rem;
+}
+
+/* Grid */
+.my-events-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 22px;
+}
+
+.my-event-tile {
+  background: rgba(255, 255, 255, 0.65);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border-radius: 20px;
+  padding: 26px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+
+.my-event-tile:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 28px rgba(59, 63, 160, 0.1);
+}
+
+.my-event-title {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #1a1a2e;
+  line-height: 1.3;
+}
+
+.my-event-meta {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #3b3fa0;
+}
+
+.my-event-location {
+  font-size: 0.83rem;
+  color: #777;
+}
+
+.my-event-desc {
+  font-size: 0.88rem;
+  color: #666;
+  line-height: 1.55;
+  margin-top: 4px;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}

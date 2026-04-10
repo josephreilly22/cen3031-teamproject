@@ -9,6 +9,7 @@ import ProfilePage from './ProfilePage';
 import OnboardingPage from './OnboardingPage';
 import AdminDashboard from './AdminDashboard';
 import CreateEventPage from './CreateEventPage';
+import MyEventsPage from './MyEventsPage';
 import SiteNavbar from './SiteNavbar';
 import { getAuthSession } from './authSession';
 
@@ -73,6 +74,7 @@ function App() {
         <Route path="/onboarding" element={<OnboardingPage />} />
         <Route path="/event-registrations" element={<AdminDashboard />} />
         <Route path="/create-event" element={<CreateEventPage />} />
+        <Route path="/my-events" element={<MyEventsPage />} />
       </Routes>
     </BrowserRouter>
   );

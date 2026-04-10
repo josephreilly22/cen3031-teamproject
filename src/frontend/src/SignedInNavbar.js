@@ -25,6 +25,9 @@ function SignedInNavbar({ title, actionLabel, actionPath, actions }) {
           <button key={path} className="nav-cta" onClick={() => navigate(path)}>{label}</button>
         ))}
         {(role === 'event-host' || role === 'admin') && (
+          <button className="nav-cta" onClick={() => navigate('/my-events')}>My Events</button>
+        )}
+        {(role === 'event-host' || role === 'admin') && (
           <button className="nav-cta" onClick={() => navigate('/create-event')}>Create Event</button>
         )}
         {role === 'admin' && (

@@ -3,6 +3,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from modules.user import sign_up, sign_in, get_profile, update_profile, delete_account, submit_host_request, get_host_requests, approve_host_request, deny_host_request
+from modules.events import create_event, get_events_by_host, get_all_events
 
 # Variables
 app = FastAPI()
@@ -26,6 +27,14 @@ class HostRegistrationRequest(BaseModel):
     last_name: str
     organization: str
     message: str
+
+class CreateEventRequest(BaseModel):
+    owner_email: str
+    title: str
+    host: str
+    date: str
+    location: str
+    description: str
 
 class UpdateProfileRequest(BaseModel):
     email: str
@@ -96,6 +105,27 @@ def profile_get(email: str):
 def profile_update(body: UpdateProfileRequest):
     try:
         return update_profile(body.email, body.interests, body.event_type)
+    except ValueError as e:
+        return {"success": False, "message": str(e)}
+
+@app.post("/events")
+def events_create(body: CreateEventRequest):
+    try:
+        return create_event(body.owner_email, body.title, body.host, body.date, body.location, body.description)
+    except ValueError as e:
+        return {"success": False, "message": str(e)}
+
+@app.get("/events")
+def events_get_all():
+    try:
+        return get_all_events()
+    except ValueError as e:
+        return {"success": False, "message": str(e)}
+
+@app.get("/events/host")
+def events_by_host(email: str):
+    try:
+        return get_events_by_host(email)
     except ValueError as e:
         return {"success": False, "message": str(e)}
 

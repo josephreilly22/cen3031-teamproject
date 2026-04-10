@@ -109,6 +109,13 @@
   color: #aab;
 }
 
+.interests-char-count {
+  text-align: right;
+  font-size: 0.78rem;
+  color: #aab;
+  margin-top: 4px;
+}
+
 /* Event type toggle buttons */
 .event-type-buttons {
   display: flex;
