@@ -7,7 +7,7 @@
       "request": "launch",
       "python": "${workspaceFolder}\\.venv\\Scripts\\python.exe",
       "preLaunchTask": "Start Frontend",
-      "postDebugTask": "Stop Frontend",
+      "postDebugTask": "Stop App",
       "module": "uvicorn",
       "args": [
         "main:app",

@@ -13,11 +13,12 @@
       "linux": {
         "command": "cd '${workspaceFolder}/src/backend' && '${workspaceFolder}/.venv/bin/uvicorn' main:app --reload"
       },
-      "isBackground": true,
       "presentation": {
         "reveal": "always",
         "panel": "dedicated",
-        "group": "app"
+        "group": "app",
+        "showReuseMessage": false,
+        "close": true
       },
       "problemMatcher": []
     },
@@ -35,16 +36,19 @@
         ]
       },
       "osx": {
-        "command": "cd '${workspaceFolder}/src/frontend' && PORT=3000 BROWSER=none npm start"
+        "command": "bash",
+        "args": ["${workspaceFolder}/.vscode/scripts/start.sh"]
       },
       "linux": {
-        "command": "cd '${workspaceFolder}/src/frontend' && PORT=3000 BROWSER=none npm start"
+        "command": "bash",
+        "args": ["${workspaceFolder}/.vscode/scripts/start.sh"]
       },
-      "isBackground": true,
       "presentation": {
         "reveal": "always",
         "panel": "dedicated",
-        "group": "app"
+        "group": "app",
+        "showReuseMessage": false,
+        "close": true
       },
       "problemMatcher": []
     },
@@ -54,7 +58,9 @@
       "dependsOrder": "parallel",
       "presentation": {
         "reveal": "always",
-        "panel": "dedicated"
+        "panel": "dedicated",
+        "showReuseMessage": false,
+        "close": true
       },
       "problemMatcher": []
     },
@@ -72,14 +78,18 @@
         ]
       },
       "osx": {
-        "command": "kill $(lsof -ti:3000) 2>/dev/null; kill $(lsof -ti:8000) 2>/dev/null; echo 'Stopped.'"
+        "command": "bash",
+        "args": ["${workspaceFolder}/.vscode/scripts/stop.sh"]
       },
       "linux": {
-        "command": "kill $(lsof -ti:3000) 2>/dev/null; kill $(lsof -ti:8000) 2>/dev/null; echo 'Stopped.'"
+        "command": "bash",
+        "args": ["${workspaceFolder}/.vscode/scripts/stop.sh"]
       },
       "presentation": {
         "reveal": "always",
-        "panel": "dedicated"
+        "panel": "dedicated",
+        "showReuseMessage": false,
+        "close": true
       },
       "problemMatcher": []
     }
