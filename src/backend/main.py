@@ -39,8 +39,12 @@ class CreateEventRequest(BaseModel):
 
 class UpdateProfileRequest(BaseModel):
     email: str
+    first_name: str
+    last_name: str
     interests: str
     event_type: str
+    password: str = ""
+    confirm_password: str = ""
 
 # Functions
 @app.get("/")
@@ -105,7 +109,15 @@ def profile_get(email: str):
 @app.post("/profile")
 def profile_update(body: UpdateProfileRequest):
     try:
-        return update_profile(body.email, body.interests, body.event_type)
+        return update_profile(
+            body.email,
+            body.first_name,
+            body.last_name,
+            body.interests,
+            body.event_type,
+            body.password,
+            body.confirm_password,
+        )
     except ValueError as e:
         return {"success": False, "message": str(e)}
 

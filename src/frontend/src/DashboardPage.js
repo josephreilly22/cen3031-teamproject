@@ -76,11 +76,16 @@ function DashboardPage() {
     return null;
   }
 
+  const displayName = session.fullName || session.firstName || 'User';
+
   return (
     <div className="dashboard">
       <SignedInNavbar title="Dashboard" actionLabel="Profile" actionPath="/profile" />
 
       <main className="dashboard-content">
+        <section className="dashboard-welcome">
+          <h1 className="dashboard-welcome-title">Welcome, {displayName}!</h1>
+        </section>
 
         <section className="events-section">
           <h2 className="events-section-title">Events For You</h2>

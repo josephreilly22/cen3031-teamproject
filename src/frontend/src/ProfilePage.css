@@ -5,20 +5,49 @@
   padding: 40px 0;
 }
 
-.profile-error {
-  color: #c0392b;
-  font-size: 0.9rem;
-  text-align: right;
-  margin-top: -8px;
+.profile-header-actions {
+  margin-top: 36px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+}
+
+.icon-yellow {
+  background: #ffe28a;
+}
+
+.profile-edit-form {
+  gap: 16px;
+}
+
+.profile-edit-form .form-group input {
+  background: rgba(255, 255, 255, 0.8);
+  border-color: #ddd;
 }
 
 /* Delete account card */
 .delete-account-card {
-  border: 1.5px solid rgba(192, 57, 43, 0.2);
+  background: rgba(255, 232, 232, 0.72);
+  border: 1.5px solid rgba(192, 57, 43, 0.28);
+}
+
+.delete-account-card .card-section-title,
+.delete-account-card .card-section-sub {
+  color: #8f2c21;
 }
 
 .icon-red {
   background: #ffd5d0;
+}
+
+.profile-error-banner {
+  margin-bottom: 0;
+}
+
+.delete-card-sub {
+  color: #8f2c21;
 }
 
 .delete-btn {
@@ -68,4 +97,18 @@
 .delete-cancel-btn:hover {
   border-color: #888;
   color: #444;
+}
+
+@media (max-width: 640px) {
+  .profile-header-actions {
+    justify-content: center;
+  }
+
+  .profile-error-banner {
+    width: 100%;
+  }
+
+  .profile-edit-form .form-row {
+    flex-direction: column;
+  }
 }

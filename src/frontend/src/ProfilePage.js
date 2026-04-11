@@ -2,13 +2,18 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './OnboardingPage.css';
 import './ProfilePage.css';
+import './SignupPage.css';
 import SignedInNavbar from './SignedInNavbar';
-import { getAuthSession, clearAuthSession } from './authSession';
+import { getAuthSession, clearAuthSession, setAuthSession, setUserName } from './authSession';
 
 function ProfilePage() {
   const navigate = useNavigate();
   const session = getAuthSession();
 
+  const [firstName, setFirstName] = useState(session.firstName || '');
+  const [lastName, setLastName] = useState(session.lastName || '');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [interests, setInterests] = useState('');
   const [eventType, setEventType] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -26,30 +31,61 @@ function ProfilePage() {
       .then((r) => r.json())
       .then((data) => {
         if (data.success) {
+          setFirstName(data.first_name || session.firstName || '');
+          setLastName(data.last_name || session.lastName || '');
           setInterests(data.interests || '');
           setEventType(data.event_type || null);
         }
       })
       .catch(() => {})
       .finally(() => setLoading(false));
-  }, [navigate, session.signedIn, session.email]);
+  }, [navigate, session.email, session.firstName, session.lastName, session.signedIn]);
 
   if (!session.signedIn) return null;
 
   const handleSave = async () => {
+    if (!firstName.trim() || !lastName.trim()) {
+      setError('First name and last name are required.');
+      return;
+    }
+
     if (!eventType) {
       setError('Please select an event preference.');
       return;
     }
+
+    if (password && password !== confirmPassword) {
+      setError('Passwords do not match.');
+      return;
+    }
+
     setError('');
+
     try {
       const res = await fetch('http://localhost:8000/profile', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: session.email, interests, event_type: eventType }),
+        body: JSON.stringify({
+          email: session.email,
+          first_name: firstName,
+          last_name: lastName,
+          interests,
+          event_type: eventType,
+          password,
+          confirm_password: confirmPassword,
+        }),
       });
       const data = await res.json();
+
       if (data.success) {
+        setUserName(firstName.trim(), lastName.trim());
+
+        if (password) {
+          setAuthSession(session.email, password);
+          setPassword('');
+          setConfirmPassword('');
+        }
+
         setSaved(true);
         setTimeout(() => setSaved(false), 2500);
       } else {
@@ -66,6 +102,7 @@ function ProfilePage() {
         method: 'DELETE',
       });
       const data = await res.json();
+
       if (data.success) {
         clearAuthSession();
         navigate('/');
@@ -84,22 +121,87 @@ function ProfilePage() {
       <SignedInNavbar title="Profile" actionLabel="Dashboard" actionPath="/dashboard" />
 
       <main className="onboarding-content">
-
         <div className="onboarding-header">
           <h1 className="onboarding-heading">Profile</h1>
           <p className="onboarding-sub">
             Manage your preferences. These help us recommend events that match what
-            you're actually looking for.
+            you&apos;re actually looking for.
           </p>
+          {!loading && (
+            <div className="profile-header-actions">
+              {error && <p className="signup-error profile-error-banner">⚠ {error}</p>}
+              <button className="save-btn" onClick={handleSave}>
+                {saved ? '✓ Saved!' : 'Save Changes'}
+              </button>
+            </div>
+          )}
         </div>
 
         {loading ? (
           <div className="profile-loading">Loading your profile...</div>
         ) : (
           <>
+            <div className="onboarding-card profile-account-card">
+              <div className="card-label-row">
+                <span className="card-icon-bubble icon-yellow" aria-hidden="true">✏️</span>
+                <h2 className="card-section-title">Account Details</h2>
+              </div>
+              <p className="card-section-sub">
+                Want to update the name or password tied to your account?
+              </p>
+              <div className="signup-form profile-edit-form">
+                <div className="form-row">
+                  <div className="form-group">
+                    <label htmlFor="profileFirstName">First Name</label>
+                    <input
+                      type="text"
+                      id="profileFirstName"
+                      placeholder="John"
+                      value={firstName}
+                      onChange={(e) => setFirstName(e.target.value)}
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label htmlFor="profileLastName">Last Name</label>
+                    <input
+                      type="text"
+                      id="profileLastName"
+                      placeholder="Doe"
+                      value={lastName}
+                      onChange={(e) => setLastName(e.target.value)}
+                    />
+                  </div>
+                </div>
+
+                <div className="form-group">
+                  <label htmlFor="profilePassword">Password</label>
+                  <input
+                    type="password"
+                    id="profilePassword"
+                    placeholder="••••••••"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                  />
+                </div>
+
+                {password && (
+                  <div className="form-group">
+                    <label htmlFor="profileConfirmPassword">Confirm Password</label>
+                    <input
+                      type="password"
+                      id="profileConfirmPassword"
+                      placeholder="••••••••"
+                      value={confirmPassword}
+                      onChange={(e) => setConfirmPassword(e.target.value)}
+                    />
+                  </div>
+                )}
+              </div>
+            </div>
+
             <div className="onboarding-card">
               <div className="card-label-row">
-                <span className="card-icon-bubble icon-blue">✨</span>
+                <span className="card-icon-bubble icon-blue" aria-hidden="true">✨</span>
                 <h2 className="card-section-title">Your Interests</h2>
               </div>
               <p className="card-section-sub">
@@ -118,7 +220,7 @@ function ProfilePage() {
 
             <div className="onboarding-card">
               <div className="card-label-row">
-                <span className="card-icon-bubble icon-pink">📍</span>
+                <span className="card-icon-bubble icon-pink" aria-hidden="true">📍</span>
                 <h2 className="card-section-title">Event Preferences</h2>
               </div>
               <p className="card-section-sub">
@@ -137,17 +239,9 @@ function ProfilePage() {
               </div>
             </div>
 
-            {error && <p className="profile-error">{error}</p>}
-
-            <div className="onboarding-actions">
-              <button className="save-btn" onClick={handleSave}>
-                {saved ? '✓ Saved!' : 'Save Changes'}
-              </button>
-            </div>
-
             <div className="onboarding-card event-leader-card">
               <div className="card-label-row">
-                <span className="card-icon-bubble icon-green">🎯</span>
+                <span className="card-icon-bubble icon-green" aria-hidden="true">🎯</span>
                 <h2 className="card-section-title">Become an Event Leader</h2>
               </div>
               <p className="card-section-sub">
@@ -162,10 +256,10 @@ function ProfilePage() {
 
             <div className="onboarding-card delete-account-card">
               <div className="card-label-row">
-                <span className="card-icon-bubble icon-red">⚠️</span>
+                <span className="card-icon-bubble icon-red" aria-hidden="true">⚠️</span>
                 <h2 className="card-section-title">Danger Zone</h2>
               </div>
-              <p className="card-section-sub">
+              <p className="card-section-sub delete-card-sub">
                 Permanently delete your account and all associated data. This cannot be undone.
               </p>
               {!confirmDelete ? (
@@ -182,7 +276,6 @@ function ProfilePage() {
             </div>
           </>
         )}
-
       </main>
     </div>
   );

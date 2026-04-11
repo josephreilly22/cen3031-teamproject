@@ -10,19 +10,20 @@ host_requests_database = database("HostRequests")
 
 # Functions
 def _validate_email(email: str):
-    if not isinstance(email, str): raise ValueError("email must be a string")
+    if not isinstance(email, str): raise ValueError("Email must be a string")
 
     normalized = email.strip().lower()
-    if not EMAIL_PATTERN.match(normalized): raise ValueError("invalid email")
+    if not EMAIL_PATTERN.match(normalized): raise ValueError("Invalid email")
 
     return normalized
 
 def _validate_name(name: str, field_name: str):
-    if not isinstance(name, str) or not name.strip(): raise ValueError(f"{field_name} is required")
+    label = field_name.replace("_", " ").capitalize()
+    if not isinstance(name, str) or not name.strip(): raise ValueError(f"{label} is required")
     return name.strip()
 
 def _validate_password(password: str):
-    if not isinstance(password, str) or len(password) < 8: raise ValueError("password must be at least 8 characters")
+    if not isinstance(password, str) or len(password) < 8: raise ValueError("Password must be at least 8 characters")
     return password
 
 def sign_up(first_name: str, last_name: str, email: str, password: str, confirm_password: str):
@@ -57,6 +58,8 @@ def get_profile(email: str):
 
     return {
         "success": True,
+        "first_name": user.get("first_name", ""),
+        "last_name": user.get("last_name", ""),
         "interests": user.get("interests", ""),
         "event_type": user.get("event_type", ""),
     }
@@ -106,8 +109,10 @@ def delete_account(email: str):
     users_database.remove_document(email)
     return {"success": True, "message": "Account deleted"}
 
-def update_profile(email: str, interests: str, event_type: str):
+def update_profile(email: str, first_name: str, last_name: str, interests: str, event_type: str, password: str = "", confirm_password: str = ""):
     email = _validate_email(email)
+    first_name = _validate_name(first_name, "first_name")
+    last_name = _validate_name(last_name, "last_name")
 
     if event_type not in {"on-campus", "off-campus", "both"}:
         return {"success": False, "message": "Invalid event type"}
@@ -115,10 +120,17 @@ def update_profile(email: str, interests: str, event_type: str):
     user, _ = users_database.get_document(email)
     if user is None: return {"success": False, "message": "User not found"}
 
+    if password or confirm_password:
+        password = _validate_password(password)
+        if password != confirm_password: return {"success": False, "message": "Passwords do not match"}
+        user["password"] = password
+
+    user["first_name"] = first_name
+    user["last_name"] = last_name
     user["interests"] = interests.strip()
     user["event_type"] = event_type
     users_database.set_document(email, user)
-    return {"success": True, "message": "Profile updated"}
+    return {"success": True, "message": "Profile updated", "user": {"first_name": first_name, "last_name": last_name, "email": email}}
 
 # Initialize
 __all__ = ["sign_up", "sign_in", "get_profile", "update_profile"]
