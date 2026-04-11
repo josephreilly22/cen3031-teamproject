@@ -12,7 +12,7 @@ function MyEventsPage() {
 
   useEffect(() => {
     if (!session.signedIn) { navigate('/login'); return; }
-    if (session.role !== 'event-host' && session.role !== 'admin') { navigate('/dashboard'); return; }
+    if (session.role !== 'hoster' && session.role !== 'admin') { navigate('/dashboard'); return; }
 
     fetch(`http://localhost:8000/events/host?email=${encodeURIComponent(session.email)}`)
       .then((r) => r.json())
@@ -21,7 +21,7 @@ function MyEventsPage() {
       .finally(() => setLoading(false));
   }, [navigate, session.signedIn, session.role, session.email]);
 
-  if (!session.signedIn || (session.role !== 'event-host' && session.role !== 'admin')) return null;
+  if (!session.signedIn || (session.role !== 'hoster' && session.role !== 'admin')) return null;
 
   const formatDate = (dateStr) => {
     if (!dateStr) return '';

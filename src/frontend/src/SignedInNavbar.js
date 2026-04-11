@@ -24,10 +24,10 @@ function SignedInNavbar({ title, actionLabel, actionPath, actions }) {
         {buttons.map(({ label, path }) => (
           <button key={path} className="nav-cta" onClick={() => navigate(path)}>{label}</button>
         ))}
-        {(role === 'event-host' || role === 'admin') && (
+        {(role === 'hoster' || role === 'admin') && (
           <button className="nav-cta" onClick={() => navigate('/my-events')}>My Events</button>
         )}
-        {(role === 'event-host' || role === 'admin') && (
+        {(role === 'hoster' || role === 'admin') && (
           <button className="nav-cta" onClick={() => navigate('/create-event')}>Create Event</button>
         )}
         {role === 'admin' && (
