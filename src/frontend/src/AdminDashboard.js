@@ -59,7 +59,7 @@ function AdminDashboard() {
           <pre className="admin-info-code">{`# List all users and their current roles
 ../../.venv/bin/python set_role.py
 
-# Set a specific role  (normal | event-host | admin)
+# Set a specific role  (user | hoster | admin)
 ../../.venv/bin/python set_role.py <email> <role>
 
 # Example

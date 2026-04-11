@@ -36,8 +36,8 @@ def sign_up(first_name: str, last_name: str, email: str, password: str, confirm_
     user, _ = users_database.get_document(email)
     if user is not None: return {"success": False, "message": "Email already registered"}
 
-    users_database.set_document(email, {"first_name": first_name, "last_name": last_name, "email": email, "password": password, "role": "normal"})
-    return {"success": True, "message": "Account created successfully", "user": {"first_name": first_name, "last_name": last_name, "email": email, "role": "normal"}, "redirect": "/onboarding"}
+    users_database.set_document(email, {"first_name": first_name, "last_name": last_name, "email": email, "password": password, "role": "user"})
+    return {"success": True, "message": "Account created successfully", "user": {"first_name": first_name, "last_name": last_name, "email": email, "role": "user"}, "redirect": "/onboarding"}
 
 def sign_in(email: str, password: str):
     email = _validate_email(email)
@@ -47,7 +47,7 @@ def sign_in(email: str, password: str):
     if user is None: return {"success": False, "message": "Invalid email or password"}
     if user.get("password") != password: return {"success": False, "message": "Invalid email or password"}
 
-    return {"success": True, "message": "Login successful", "user": {"first_name": user.get("first_name"), "last_name": user.get("last_name"), "email": email, "role": user.get("role", "normal")}, "redirect": "/dashboard"}
+    return {"success": True, "message": "Login successful", "user": {"first_name": user.get("first_name"), "last_name": user.get("last_name"), "email": email, "role": user.get("role", "user")}, "redirect": "/dashboard"}
 
 def get_profile(email: str):
     email = _validate_email(email)
@@ -87,10 +87,10 @@ def approve_host_request(email: str):
     user, _ = users_database.get_document(email)
     if user is None: return {"success": False, "message": "User not found"}
 
-    user["role"] = "event-host"
+    user["role"] = "hoster"
     users_database.set_document(email, user)
     host_requests_database.remove_document(email)
-    return {"success": True, "message": "Host request approved", "role": "event-host"}
+    return {"success": True, "message": "Host request approved", "role": "hoster"}
 
 def deny_host_request(email: str):
     email = _validate_email(email)

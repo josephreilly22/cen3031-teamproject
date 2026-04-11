@@ -33,7 +33,7 @@ export function getAuthSession() {
   const email = getCookie('session_email');
   const password = getCookie('session_password');
   const onboardingComplete = getCookie('onboarding_complete') === 'true';
-  const role = getCookie('user_role') || 'normal';
+  const role = getCookie('user_role') || 'user';
 
   const firstName = getCookie('user_first_name');
   const lastName = getCookie('user_last_name');

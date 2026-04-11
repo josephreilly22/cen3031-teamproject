@@ -30,7 +30,7 @@ function LoginPage() {
       const data = await res.json();
       if (data.success) {
         setAuthSession(email, password);
-        setUserRole(data.user?.role || 'normal');
+        setUserRole(data.user?.role || 'user');
         setUserName(data.user?.first_name || '', data.user?.last_name || '');
         const session = getAuthSession();
         navigate(session.onboardingComplete ? '/dashboard' : '/onboarding');

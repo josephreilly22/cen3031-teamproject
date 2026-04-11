@@ -32,7 +32,7 @@ function SignupPage() {
       const data = await res.json();
       if (data.success) {
         setAuthSession(email, password);
-        setUserRole('normal');
+        setUserRole('user');
         setUserName(firstName, lastName);
         navigate('/onboarding');
       } else {
