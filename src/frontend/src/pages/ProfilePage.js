@@ -5,10 +5,42 @@ import '../styles/ProfilePage.css';
 import '../styles/SignupPage.css';
 import SignedInNavbar from '../components/SignedInNavbar';
 import { getAuthSession, clearAuthSession, setAuthSession, setOnboardingState, setUserName, setUserRole } from '../utils/authSession';
+import { applyCharacterLimit, getEffectiveCharacterCount } from '../utils/textInput';
 
 function ProfilePage() {
   const navigate = useNavigate();
   const session = getAuthSession();
+  const NAME_MAX_LENGTH = 64;
+  const PASSWORD_MAX_LENGTH = 256;
+  const INTERESTS_MAX_LENGTH = 256;
+  const preferenceOptions = ['on-campus', 'off-campus'];
+  const normalizeInterestsInput = (value) => value.replace(/\s+$/, '');
+  const eventTypeToSelections = (value) => {
+    if (value === 'both') {
+      return [...preferenceOptions];
+    }
+
+    if (preferenceOptions.includes(value)) {
+      return [value];
+    }
+
+    return [];
+  };
+  const selectionsToEventType = (selections) => {
+    if (selections.includes('on-campus') && selections.includes('off-campus')) {
+      return 'both';
+    }
+
+    if (selections.includes('on-campus')) {
+      return 'on-campus';
+    }
+
+    if (selections.includes('off-campus')) {
+      return 'off-campus';
+    }
+
+    return null;
+  };
 
   const [firstName, setFirstName] = useState(session.firstName || '');
   const [lastName, setLastName] = useState(session.lastName || '');
@@ -22,6 +54,24 @@ function ProfilePage() {
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState('');
   const [confirmDelete, setConfirmDelete] = useState(false);
+
+  const handleInterestsChange = (value) => {
+    const nextValue = applyCharacterLimit(value, INTERESTS_MAX_LENGTH, { multiline: true });
+    if (nextValue !== null) {
+      setInterests(nextValue);
+    }
+  };
+
+  const toggleEventPreference = (type) => {
+    const nextSelections = new Set(eventTypeToSelections(eventType));
+    if (nextSelections.has(type)) {
+      nextSelections.delete(type);
+    } else {
+      nextSelections.add(type);
+    }
+
+    setEventType(selectionsToEventType([...nextSelections]));
+  };
 
   useEffect(() => {
     if (!session.signedIn) {
@@ -37,7 +87,7 @@ function ProfilePage() {
             firstName: data.first_name || session.firstName || '',
             lastName: data.last_name || session.lastName || '',
             role: data.role || session.role || 'user',
-            interests: data.interests || '',
+            interests: normalizeInterestsInput(data.interests || ''),
             eventType: data.event_type || null,
           };
 
@@ -106,6 +156,7 @@ function ProfilePage() {
     }
 
     setError('');
+    const nextInterests = normalizeInterestsInput(interests);
 
     try {
       const res = await fetch('http://localhost:8000/profile', {
@@ -115,7 +166,7 @@ function ProfilePage() {
           email: session.email,
           first_name: firstName,
           last_name: lastName,
-          interests,
+          interests: nextInterests,
           event_type: eventType,
           password,
           confirm_password: confirmPassword,
@@ -128,13 +179,14 @@ function ProfilePage() {
           firstName: firstName.trim(),
           lastName: lastName.trim(),
           role,
-          interests,
+          interests: nextInterests,
           eventType,
         };
 
         setUserName(firstName.trim(), lastName.trim());
         setUserRole(data.user?.role || role);
         setOnboardingState(Boolean(data.user?.onboarding_complete));
+        setInterests(nextInterests);
         setInitialProfile(nextProfile);
         setRole(data.user?.role || role);
 
@@ -174,6 +226,15 @@ function ProfilePage() {
     }
   };
 
+  const handleSignOut = () => {
+    if (!confirmLeave()) {
+      return;
+    }
+
+    clearAuthSession();
+    navigate('/');
+  };
+
   return (
     <div className="onboarding">
       <SignedInNavbar
@@ -195,9 +256,14 @@ function ProfilePage() {
             <div className="profile-header-actions">
               {error && <p className="signup-error profile-error-banner">⚠ {error}</p>}
               {saved && <p className="profile-success-banner">✓ Changes have been saved.</p>}
-              <button className="save-btn" onClick={handleSave}>
-                Save Changes
-              </button>
+              <div className="profile-action-buttons">
+                <button className="save-btn" onClick={handleSave}>
+                  Save Changes
+                </button>
+                <button className="profile-signout-btn" onClick={handleSignOut}>
+                  Sign Out
+                </button>
+              </div>
             </div>
           )}
         </div>
@@ -233,7 +299,12 @@ function ProfilePage() {
                       id="profileFirstName"
                       placeholder="John"
                       value={firstName}
-                      onChange={(e) => setFirstName(e.target.value)}
+                      onChange={(e) => {
+                        const nextValue = applyCharacterLimit(e.target.value, NAME_MAX_LENGTH);
+                        if (nextValue !== null) {
+                          setFirstName(nextValue);
+                        }
+                      }}
                     />
                   </div>
                   <div className="form-group">
@@ -243,7 +314,12 @@ function ProfilePage() {
                       id="profileLastName"
                       placeholder="Doe"
                       value={lastName}
-                      onChange={(e) => setLastName(e.target.value)}
+                      onChange={(e) => {
+                        const nextValue = applyCharacterLimit(e.target.value, NAME_MAX_LENGTH);
+                        if (nextValue !== null) {
+                          setLastName(nextValue);
+                        }
+                      }}
                     />
                   </div>
                 </div>
@@ -255,7 +331,7 @@ function ProfilePage() {
                     id="profilePassword"
                     placeholder="••••••••"
                     value={password}
-                    onChange={(e) => setPassword(e.target.value)}
+                    onChange={(e) => setPassword(e.target.value.slice(0, PASSWORD_MAX_LENGTH))}
                   />
                 </div>
 
@@ -267,7 +343,7 @@ function ProfilePage() {
                       id="profileConfirmPassword"
                       placeholder="••••••••"
                       value={confirmPassword}
-                      onChange={(e) => setConfirmPassword(e.target.value)}
+                      onChange={(e) => setConfirmPassword(e.target.value.slice(0, PASSWORD_MAX_LENGTH))}
                     />
                   </div>
                 )}
@@ -280,17 +356,16 @@ function ProfilePage() {
                 <h2 className="card-section-title">Your Interests</h2>
               </div>
               <p className="card-section-sub">
-                What topics, activities, or themes get you excited?
+                What topics, activities, or themes get you excited? This helps power your AI-personalized event suggestions.
               </p>
               <textarea
                 className="interests-input"
                 placeholder="e.g. live music, hackathons, cooking, film screenings..."
                 value={interests}
-                onChange={(e) => setInterests(e.target.value.slice(0, 256))}
+                onChange={(e) => handleInterestsChange(e.target.value)}
                 rows={4}
-                maxLength={256}
               />
-              <p className="interests-char-count">{interests.length} / 256</p>
+              <p className="interests-char-count">{getEffectiveCharacterCount(interests, { multiline: true })} / {INTERESTS_MAX_LENGTH} characters</p>
             </div>
 
             <div className="onboarding-card">
@@ -299,16 +374,16 @@ function ProfilePage() {
                 <h2 className="card-section-title">Event Preferences</h2>
               </div>
               <p className="card-section-sub">
-                What kind of events are you looking for?
+                What kind of events are you looking for? Select all that apply.
               </p>
               <div className="event-type-buttons">
-                {['on-campus', 'off-campus', 'both'].map((type) => (
+                {preferenceOptions.map((type) => (
                   <button
                     key={type}
-                    className={`event-type-btn ${eventType === type ? 'active' : ''}`}
-                    onClick={() => setEventType(type)}
+                    className={`event-type-btn ${eventTypeToSelections(eventType).includes(type) ? 'active' : ''}`}
+                    onClick={() => toggleEventPreference(type)}
                   >
-                    {type === 'on-campus' ? 'On-Campus' : type === 'off-campus' ? 'Off-Campus' : 'Both'}
+                    {type === 'on-campus' ? 'On-Campus' : 'Off-Campus'}
                   </button>
                 ))}
               </div>

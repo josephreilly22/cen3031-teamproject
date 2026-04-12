@@ -4,6 +4,7 @@ import '../styles/App.css';
 import '../styles/HostRegistrationPage.css';
 import SiteNavbar from '../components/SiteNavbar';
 import { getAuthSession } from '../utils/authSession';
+import { normalizeTextInput } from '../utils/textInput';
 
 function HostRegistrationPage() {
   const navigate = useNavigate();
@@ -24,7 +25,10 @@ function HostRegistrationPage() {
   });
 
   const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
+    setForm({
+      ...form,
+      [e.target.name]: normalizeTextInput(e.target.value, { multiline: e.target.name === 'message' }),
+    });
   };
 
   const handleSubmit = async (e) => {

@@ -27,8 +27,11 @@
   background: none;
   border: none;
   cursor: pointer;
-  font-size: 0.9rem;
-  color: #555;
+  font-size: 0.76rem;
+  color: #7b80a8;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
   font-family: inherit;
   padding: 0;
   margin-bottom: 28px;
@@ -36,7 +39,7 @@
 }
 
 .back-btn:hover {
-  color: #1a1a2e;
+  color: #5f6797;
 }
 
 .signup-logo {

@@ -56,8 +56,8 @@ function AdminDashboard() {
     }
   };
 
-  const handleBanish = async (email) => {
-    const res = await fetch('http://localhost:8000/admin/banish', {
+  const handleRemove = async (email) => {
+    const res = await fetch('http://localhost:8000/admin/remove', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email }),
@@ -66,6 +66,29 @@ function AdminDashboard() {
     if (data.success) {
       setHosters((prev) => prev.filter((user) => user.email !== email));
     }
+  };
+
+  const avatarGradients = [
+    ['#4f7ed8', '#8a7ae6'],
+    ['#3b8ea5', '#6ec6ca'],
+    ['#d46a6a', '#f0a6a6'],
+    ['#5b9bd5', '#7a89f0'],
+    ['#3d7f6f', '#77b28c'],
+    ['#9a6ad6', '#d58edc'],
+    ['#4f6bd8', '#d07ca6'],
+    ['#4d8f5f', '#b0c96e'],
+  ];
+
+  const getGradientForUser = (seedValue) => {
+    const seed = seedValue || 'user';
+    let hash = 0;
+    for (let index = 0; index < seed.length; index += 1) {
+      hash = ((hash << 5) - hash) + seed.charCodeAt(index);
+      hash |= 0;
+    }
+
+    const [start, end] = avatarGradients[Math.abs(hash) % avatarGradients.length];
+    return `linear-gradient(135deg, ${start}, ${end})`;
   };
 
   return (
@@ -101,7 +124,10 @@ MacOS:
                   {admins.map((user) => (
                     <div className="admin-user-row" key={user.email}>
                       <div className="admin-user-left">
-                        <div className="request-avatar admin-user-avatar">
+                        <div
+                          className="request-avatar admin-user-avatar"
+                          style={{ background: getGradientForUser(user.email) }}
+                        >
                           {user.first_name?.[0]}{user.last_name?.[0]}
                         </div>
                         <div>
@@ -125,7 +151,10 @@ MacOS:
                   {hosters.map((user) => (
                     <div className="admin-user-row" key={user.email}>
                       <div className="admin-user-left">
-                        <div className="request-avatar admin-user-avatar">
+                        <div
+                          className="request-avatar admin-user-avatar"
+                          style={{ background: getGradientForUser(user.email) }}
+                        >
                           {user.first_name?.[0]}{user.last_name?.[0]}
                         </div>
                         <div>
@@ -134,8 +163,8 @@ MacOS:
                           <p className="admin-user-org">{user.organization || 'No organization listed'}</p>
                         </div>
                       </div>
-                      <button className="deny-btn" onClick={() => handleBanish(user.email)}>
-                        Banish
+                      <button className="deny-btn" onClick={() => handleRemove(user.email)}>
+                        Remove
                       </button>
                     </div>
                   ))}
@@ -157,7 +186,10 @@ MacOS:
             {requests.map((req) => (
               <div className="request-tile" key={req.email}>
                 <div className="request-tile-header">
-                  <div className="request-avatar">
+                  <div
+                    className="request-avatar"
+                    style={{ background: getGradientForUser(req.email) }}
+                  >
                     {req.first_name?.[0]}{req.last_name?.[0]}
                   </div>
                   <div>

@@ -2,8 +2,11 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../styles/SignupPage.css';
 import { setAuthSession, setOnboardingState, setUserRole, setUserName } from '../utils/authSession';
+import { applyCharacterLimit, normalizeEmailInput } from '../utils/textInput';
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const NAME_MAX_LENGTH = 64;
+const PASSWORD_MAX_LENGTH = 256;
 
 function SignupPage() {
   const navigate = useNavigate();
@@ -15,6 +18,13 @@ function SignupPage() {
   const [agreedToTerms, setAgreedToTerms] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+
+  const handleNameChange = (setter, value) => {
+    const nextValue = applyCharacterLimit(value, NAME_MAX_LENGTH);
+    if (nextValue !== null) {
+      setter(nextValue);
+    }
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -97,7 +107,7 @@ function SignupPage() {
                 id="firstName"
                 placeholder="John"
                 value={firstName}
-                onChange={(e) => setFirstName(e.target.value)}
+                onChange={(e) => handleNameChange(setFirstName, e.target.value)}
               />
             </div>
             <div className="form-group">
@@ -107,7 +117,7 @@ function SignupPage() {
                 id="lastName"
                 placeholder="Doe"
                 value={lastName}
-                onChange={(e) => setLastName(e.target.value)}
+                onChange={(e) => handleNameChange(setLastName, e.target.value)}
               />
             </div>
           </div>
@@ -119,7 +129,7 @@ function SignupPage() {
               id="email"
               placeholder="you@example.com"
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              onChange={(e) => setEmail(normalizeEmailInput(e.target.value))}
             />
           </div>
 
@@ -130,7 +140,7 @@ function SignupPage() {
               id="password"
               placeholder="••••••••"
               value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              onChange={(e) => setPassword(e.target.value.slice(0, PASSWORD_MAX_LENGTH))}
             />
           </div>
 
@@ -141,7 +151,7 @@ function SignupPage() {
               id="confirmPassword"
               placeholder="••••••••"
               value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
+              onChange={(e) => setConfirmPassword(e.target.value.slice(0, PASSWORD_MAX_LENGTH))}
             />
           </div>
 

@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../styles/MyEventsPage.css';
 import SignedInNavbar from '../components/SignedInNavbar';
+import OverflowTitle from '../components/OverflowTitle';
 import { getAuthSession } from '../utils/authSession';
 
 function MyEventsPage() {
@@ -16,7 +17,16 @@ function MyEventsPage() {
 
     fetch(`http://localhost:8000/events/host?email=${encodeURIComponent(session.email)}`)
       .then((r) => r.json())
-      .then((data) => { if (data.success) setEvents(data.events); })
+      .then((data) => {
+        if (data.success) {
+          const sortedEvents = [...(data.events || [])].sort((a, b) => {
+            const aTime = new Date(a.date || 0).getTime();
+            const bTime = new Date(b.date || 0).getTime();
+            return aTime - bTime;
+          });
+          setEvents(sortedEvents);
+        }
+      })
       .catch(() => {})
       .finally(() => setLoading(false));
   }, [navigate, session.signedIn, session.role, session.email]);
@@ -50,8 +60,49 @@ function MyEventsPage() {
     return { startLabel, endLabel };
   };
 
+  const formatLocationTypes = (types) => {
+    if (!Array.isArray(types) || types.length === 0) {
+      return '';
+    }
+
+    const labels = [];
+    if (types.includes('on-campus')) labels.push('On-Campus');
+    if (types.includes('off-campus')) labels.push('Off-Campus');
+    return labels.join(', ');
+  };
+
+  const isEventLive = (start, end) => {
+    const now = new Date();
+    const startTime = start ? new Date(start) : null;
+    const endTime = end ? new Date(end) : null;
+    return Boolean(
+      startTime &&
+      !Number.isNaN(startTime.getTime()) &&
+      startTime <= now &&
+      (!endTime || Number.isNaN(endTime.getTime()) || endTime >= now)
+    );
+  };
+
   const handleEditEvent = (eventId) => {
     navigate(`/edit-event/${encodeURIComponent(eventId)}`);
+  };
+
+  const handleTileKeyDown = (event, eventId) => {
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      handleEditEvent(eventId);
+    }
+  };
+
+  const campusLabelForEvent = (event) => formatLocationTypes(event.location_types);
+  const formatCardDescription = (value) => {
+    const normalized = (value || '').trim();
+    if (!normalized) {
+      return '';
+    }
+
+    const sentenceMatch = normalized.match(/^.*?[.!?](?=(?:\s|$))/s);
+    return (sentenceMatch ? sentenceMatch[0] : normalized).trim();
   };
 
   return (
@@ -60,8 +111,10 @@ function MyEventsPage() {
 
       <main className="my-events-content">
         <div className="my-events-header">
-          <h1 className="my-events-heading">My Events</h1>
-          <p className="my-events-sub">All events you've created, in one place.</p>
+          <div className="my-events-header-copy">
+            <h1 className="my-events-heading">My Events</h1>
+            <p className="my-events-sub">All events you've created, in one place.</p>
+          </div>
           <button className="my-events-create-btn" onClick={() => navigate('/create-event')}>
             + Create Event
           </button>
@@ -80,33 +133,51 @@ function MyEventsPage() {
         ) : (
           <div className="my-events-grid">
             {events.map((event) => (
-              <div className="my-event-tile" key={event.id}>
+              <div
+                className="my-event-tile"
+                key={event.id}
+                role="button"
+                tabIndex={0}
+                onClick={() => handleEditEvent(event.id)}
+                onKeyDown={(e) => handleTileKeyDown(e, event.id)}
+                aria-label={`Edit ${event.title}`}
+              >
                 <div className="my-event-title-row">
-                  <h3 className="my-event-title">{event.title}</h3>
-                  <button
-                    type="button"
-                    className="my-event-menu-btn"
-                    onClick={() => handleEditEvent(event.id)}
-                    aria-label={`Edit ${event.title}`}
-                    title="Edit event"
-                  >
-                    ...
-                  </button>
+                  <OverflowTitle text={event.title || ''} className="my-event-title" />
+                  {isEventLive(event.date, event.end_date) && (
+                    <span className="my-event-live">
+                      <span className="my-event-live-dot" aria-hidden="true" />
+                      LIVE
+                    </span>
+                  )}
                 </div>
+                {campusLabelForEvent(event) && (
+                  <div className="my-event-campus-tags">
+                    {campusLabelForEvent(event).split(', ').map((label) => (
+                      <span key={label} className="my-event-campus-tag">{label}</span>
+                    ))}
+                  </div>
+                )}
+                <p className="my-event-location">
+                  {'\u{1F4CD}'} {event.location}
+                </p>
                 <div className="my-event-meta-group">
                   <p className="my-event-meta">{event.host}</p>
                   {(() => {
                     const { startLabel, endLabel } = formatEventWindow(event.date, event.end_date);
                     return (
                       <>
-                        {startLabel && <p className="my-event-date"><span>Starts:</span> {startLabel}</p>}
+                        {startLabel && (
+                          <p className="my-event-date">
+                            <span>Starts:</span> {startLabel}
+                          </p>
+                        )}
                         {endLabel && <p className="my-event-date"><span>Ends:</span> {endLabel}</p>}
                       </>
                     );
                   })()}
                 </div>
-                <p className="my-event-location">📍 {event.location}</p>
-                <p className="my-event-desc">{event.description}</p>
+                <p className="my-event-desc">{formatCardDescription(event.description)}</p>
               </div>
             ))}
           </div>

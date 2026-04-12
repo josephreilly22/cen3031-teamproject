@@ -5,14 +5,63 @@ import '../styles/ProfilePage.css';
 import '../styles/SignupPage.css';
 import SignedInNavbar from '../components/SignedInNavbar';
 import { getAuthSession, setOnboardingState } from '../utils/authSession';
+import { applyCharacterLimit, getEffectiveCharacterCount } from '../utils/textInput';
 
 function OnboardingPage() {
   const navigate = useNavigate();
   const session = getAuthSession();
+  const INTERESTS_MAX_LENGTH = 256;
+  const preferenceOptions = ['on-campus', 'off-campus'];
+  const normalizeInterestsInput = (value) => value.replace(/\s+$/, '');
+  const eventTypeToSelections = (value) => {
+    if (value === 'both') {
+      return [...preferenceOptions];
+    }
+
+    if (preferenceOptions.includes(value)) {
+      return [value];
+    }
+
+    return [];
+  };
+  const selectionsToEventType = (selections) => {
+    if (selections.includes('on-campus') && selections.includes('off-campus')) {
+      return 'both';
+    }
+
+    if (selections.includes('on-campus')) {
+      return 'on-campus';
+    }
+
+    if (selections.includes('off-campus')) {
+      return 'off-campus';
+    }
+
+    return null;
+  };
   const [interests, setInterests] = useState('');
   const [eventType, setEventType] = useState(null);
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState('');
+  const hasUnsavedChanges = interests !== '' || eventType !== null;
+
+  const handleInterestsChange = (value) => {
+    const nextValue = applyCharacterLimit(value, INTERESTS_MAX_LENGTH, { multiline: true });
+    if (nextValue !== null) {
+      setInterests(nextValue);
+    }
+  };
+
+  const toggleEventPreference = (type) => {
+    const nextSelections = new Set(eventTypeToSelections(eventType));
+    if (nextSelections.has(type)) {
+      nextSelections.delete(type);
+    } else {
+      nextSelections.add(type);
+    }
+
+    setEventType(selectionsToEventType([...nextSelections]));
+  };
 
   useEffect(() => {
     if (!session.signedIn) {
@@ -36,6 +85,7 @@ function OnboardingPage() {
     }
 
     setError('');
+    const nextInterests = normalizeInterestsInput(interests);
     let data;
 
     try {
@@ -46,7 +96,7 @@ function OnboardingPage() {
           email: session.email,
           first_name: session.firstName,
           last_name: session.lastName,
-          interests,
+          interests: nextInterests,
           event_type: eventType,
           password: '',
           confirm_password: '',
@@ -67,6 +117,14 @@ function OnboardingPage() {
     setOnboardingState(Boolean(data.user?.onboarding_complete));
     setSaved(true);
     setTimeout(() => navigate('/dashboard'), 1000);
+  };
+
+  const confirmLeaveOnboarding = () => {
+    if (!hasUnsavedChanges || saved) {
+      return true;
+    }
+
+    return window.confirm('You have unsaved onboarding changes. Leave without saving?');
   };
 
   return (
@@ -95,11 +153,10 @@ function OnboardingPage() {
             className="interests-input"
             placeholder="e.g. live music, hackathons, cooking, film screenings, community volunteering..."
             value={interests}
-            onChange={(e) => setInterests(e.target.value.slice(0, 256))}
+            onChange={(e) => handleInterestsChange(e.target.value)}
             rows={4}
-            maxLength={256}
           />
-          <p className="interests-char-count">{interests.length} / 256</p>
+          <p className="interests-char-count">{getEffectiveCharacterCount(interests, { multiline: true })} / {INTERESTS_MAX_LENGTH} characters</p>
         </div>
 
         <div className="onboarding-card">
@@ -108,27 +165,18 @@ function OnboardingPage() {
             <h2 className="card-section-title">Event Preferences</h2>
           </div>
           <p className="card-section-sub">
-            What kind of events are you looking for?
+            What kind of events are you looking for? Select all that apply.
           </p>
           <div className="event-type-buttons">
-            <button
-              className={`event-type-btn ${eventType === 'on-campus' ? 'active' : ''}`}
-              onClick={() => setEventType('on-campus')}
-            >
-              On-Campus
-            </button>
-            <button
-              className={`event-type-btn ${eventType === 'off-campus' ? 'active' : ''}`}
-              onClick={() => setEventType('off-campus')}
-            >
-              Off-Campus
-            </button>
-            <button
-              className={`event-type-btn ${eventType === 'both' ? 'active' : ''}`}
-              onClick={() => setEventType('both')}
-            >
-              Both
-            </button>
+            {preferenceOptions.map((type) => (
+              <button
+                key={type}
+                className={`event-type-btn ${eventTypeToSelections(eventType).includes(type) ? 'active' : ''}`}
+                onClick={() => toggleEventPreference(type)}
+              >
+                {type === 'on-campus' ? 'On-Campus' : 'Off-Campus'}
+              </button>
+            ))}
           </div>
         </div>
 
@@ -144,7 +192,11 @@ function OnboardingPage() {
           </p>
           <button
             className="event-leader-btn"
-            onClick={() => navigate('/host-registeration', { state: { from: 'onboarding' } })}
+            onClick={() => {
+              if (confirmLeaveOnboarding()) {
+                navigate('/host-registeration', { state: { from: 'onboarding' } });
+              }
+            }}
           >
             Register as an Event Leader →
           </button>

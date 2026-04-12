@@ -1,0 +1,37 @@
+.overflow-title {
+  position: relative;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.overflow-title__copy {
+  display: inline-block;
+  flex: 0 0 auto;
+}
+
+.overflow-title--scrolling {
+  mask-image: linear-gradient(to right, transparent 0, #000 14px, #000 calc(100% - 14px), transparent 100%);
+  -webkit-mask-image: linear-gradient(to right, transparent 0, #000 14px, #000 calc(100% - 14px), transparent 100%);
+}
+
+.overflow-title__track {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--overflow-title-gap, 56px);
+  width: max-content;
+}
+
+.overflow-title--scrolling .overflow-title__track {
+  animation: overflow-title-marquee var(--overflow-title-duration, 10s) linear infinite;
+  will-change: transform;
+}
+
+@keyframes overflow-title-marquee {
+  from {
+    transform: translateX(0);
+  }
+
+  to {
+    transform: translateX(calc(-1 * var(--overflow-title-distance, 0px)));
+  }
+}

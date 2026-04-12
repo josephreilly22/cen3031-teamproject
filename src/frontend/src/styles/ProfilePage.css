@@ -14,6 +14,37 @@
   gap: 16px;
 }
 
+.profile-action-buttons {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.profile-action-buttons .save-btn,
+.profile-signout-btn {
+  min-width: 196px;
+}
+
+.profile-signout-btn {
+  background: none;
+  color: #c0392b;
+  border: 1.5px solid #c0392b;
+  border-radius: 50px;
+  padding: 13px 24px;
+  font-size: 0.97rem;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background 0.18s, color 0.18s;
+}
+
+.profile-signout-btn:hover {
+  background: #c0392b;
+  color: #fff;
+}
+
 .icon-yellow {
   background: #ffe28a;
 }
@@ -138,6 +169,10 @@
   .profile-success-banner {
     width: 100%;
     justify-content: center;
+  }
+
+  .profile-action-buttons {
+    width: 100%;
   }
 
   .profile-edit-form .form-row {

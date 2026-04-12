@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../styles/LoginPage.css';
 import { getAuthSession, setAuthSession, setOnboardingState, setUserRole, setUserName } from '../utils/authSession';
+import { normalizeEmailInput } from '../utils/textInput';
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -78,7 +79,7 @@ function LoginPage() {
               id="email"
               placeholder="you@example.com"
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              onChange={(e) => setEmail(normalizeEmailInput(e.target.value))}
             />
           </div>
           <div className="form-group">

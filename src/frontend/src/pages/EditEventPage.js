@@ -3,11 +3,18 @@ import { useNavigate, useParams } from 'react-router-dom';
 import '../styles/CreateEventPage.css';
 import SignedInNavbar from '../components/SignedInNavbar';
 import { getAuthSession } from '../utils/authSession';
+import { applyCharacterLimit, getEffectiveCharacterCount } from '../utils/textInput';
 
 function EditEventPage() {
   const navigate = useNavigate();
   const { eventId } = useParams();
   const session = getAuthSession();
+  const normalizeTitleInput = (value) => value.replace(/[\r\n]+/g, ' ');
+  const normalizeDescriptionInput = (value) => value.replace(/\s+$/, '');
+  const TITLE_MAX_LENGTH = 32;
+  const HOST_MAX_LENGTH = 64;
+  const LOCATION_MAX_LENGTH = 128;
+  const DESCRIPTION_MAX_LENGTH = 1024;
   const getMinDateTime = () => {
     const now = new Date();
     const pad = (value) => String(value).padStart(2, '0');
@@ -21,6 +28,7 @@ function EditEventPage() {
     date: '',
     end_date: '',
     location: '',
+    location_types: [],
     description: '',
   });
   const [error, setError] = useState('');
@@ -28,6 +36,8 @@ function EditEventPage() {
   const [saving, setSaving] = useState(false);
   const [loaded, setLoaded] = useState(false);
   const [initialForm, setInitialForm] = useState(null);
+  const [startTouched, setStartTouched] = useState(false);
+  const [endTouched, setEndTouched] = useState(false);
 
   const normalizeDateTime = (value) => {
     if (!value) return '';
@@ -69,7 +79,7 @@ function EditEventPage() {
       .then((data) => {
         if (data.success) {
           const event = data.event;
-          if (event.owner_email !== session.email) {
+          if (event.owner_email !== session.email && session.role !== 'admin') {
             setError('You can only edit your own events.');
             return;
           }
@@ -80,6 +90,7 @@ function EditEventPage() {
             date: normalizeDateTime(event.date),
             end_date: normalizeDateTime(event.end_date || plusOneHour(event.date)),
             location: event.location || '',
+            location_types: Array.isArray(event.location_types) ? event.location_types : [],
             description: event.description || '',
           });
           setInitialForm({
@@ -88,6 +99,7 @@ function EditEventPage() {
             date: normalizeDateTime(event.date),
             end_date: normalizeDateTime(event.end_date || plusOneHour(event.date)),
             location: event.location || '',
+            location_types: Array.isArray(event.location_types) ? event.location_types : [],
             description: event.description || '',
           });
           setLoaded(true);
@@ -100,7 +112,61 @@ function EditEventPage() {
   }, [eventId, navigate, session.email, session.fullName, session.role, session.signedIn]);
 
   const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+
+    if (name === 'date') {
+      setStartTouched(true);
+    }
+
+    if (name === 'end_date') {
+      setEndTouched(true);
+    }
+
+    if (name === 'title') {
+      const nextValue = applyCharacterLimit(normalizeTitleInput(value), TITLE_MAX_LENGTH);
+      if (nextValue !== null) {
+        setForm({ ...form, title: nextValue });
+      }
+      return;
+    }
+
+    if (name === 'host') {
+      const nextValue = applyCharacterLimit(value, HOST_MAX_LENGTH);
+      if (nextValue !== null) {
+        setForm({ ...form, host: nextValue });
+      }
+      return;
+    }
+
+    if (name === 'location') {
+      const nextValue = applyCharacterLimit(value, LOCATION_MAX_LENGTH);
+      if (nextValue !== null) {
+        setForm({ ...form, location: nextValue });
+      }
+      return;
+    }
+
+    if (name === 'description') {
+      const nextValue = applyCharacterLimit(value, DESCRIPTION_MAX_LENGTH, { multiline: true });
+      if (nextValue !== null) {
+        setForm({ ...form, description: nextValue });
+      }
+      return;
+    }
+
+    setForm({ ...form, [name]: value });
+  };
+
+  const toggleLocationType = (type) => {
+    setForm((previousForm) => {
+      const hasType = previousForm.location_types.includes(type);
+      return {
+        ...previousForm,
+        location_types: hasType
+          ? previousForm.location_types.filter((item) => item !== type)
+          : [...previousForm.location_types, type],
+      };
+    });
   };
 
   const hasUnsavedChanges = Boolean(
@@ -110,9 +176,36 @@ function EditEventPage() {
       form.date !== initialForm.date ||
       form.end_date !== initialForm.end_date ||
       form.location !== initialForm.location ||
+      JSON.stringify(form.location_types) !== JSON.stringify(initialForm.location_types) ||
       form.description !== initialForm.description
     )
   );
+  const showDateReset = Boolean(
+    initialForm && (form.date !== initialForm.date || form.end_date !== initialForm.end_date)
+  );
+
+  const isCurrentMinuteOrLater = (value) => {
+    const parsed = new Date(value);
+    if (Number.isNaN(parsed.getTime())) return false;
+
+    const now = new Date();
+    now.setSeconds(0, 0);
+    return parsed >= now;
+  };
+
+  const handleResetDates = () => {
+    if (!initialForm) {
+      return;
+    }
+
+    setStartTouched(false);
+    setEndTouched(false);
+    setForm((previousForm) => ({
+      ...previousForm,
+      date: initialForm.date,
+      end_date: initialForm.end_date,
+    }));
+  };
 
   const confirmLeave = () => {
     if (!hasUnsavedChanges) {
@@ -139,8 +232,10 @@ function EditEventPage() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
+    const normalizedTitle = normalizeTitleInput(form.title).trim();
+    const normalizedDescription = normalizeDescriptionInput(form.description);
 
-    if (!form.title.trim() || !form.host.trim() || !form.date.trim() || !form.location.trim() || !form.description.trim()) {
+    if (!normalizedTitle || !form.host.trim() || !form.date.trim() || !form.location.trim() || !normalizedDescription.trim()) {
       setError('Please fill out all required fields.');
       return;
     }
@@ -150,7 +245,12 @@ function EditEventPage() {
       return;
     }
 
-    if (new Date(form.date) < new Date()) {
+    if (!form.location_types.length) {
+      setError('Select at least one event location type.');
+      return;
+    }
+
+    if (initialForm && form.date !== initialForm.date && !isCurrentMinuteOrLater(form.date)) {
       setError('Event date and time cannot be in the past.');
       return;
     }
@@ -167,12 +267,13 @@ function EditEventPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           owner_email: session.email,
-          title: form.title,
+          title: normalizedTitle,
           host: form.host,
           date: form.date,
           end_date: form.end_date,
           location: form.location,
-          description: form.description,
+          location_types: form.location_types,
+          description: normalizedDescription,
         }),
       });
       const data = await res.json();
@@ -245,8 +346,14 @@ function EditEventPage() {
                 placeholder="e.g. Spring Hackathon 2025"
                 value={form.title}
                 onChange={handleChange}
+                maxLength={TITLE_MAX_LENGTH}
+                onBlur={() => setForm((previousForm) => ({
+                  ...previousForm,
+                  title: normalizeTitleInput(previousForm.title).trim(),
+                }))}
                 required
               />
+              <p className="ce-field-hint ce-field-counter">{getEffectiveCharacterCount(form.title)} / {TITLE_MAX_LENGTH} characters</p>
             </div>
 
             <div className="ce-field">
@@ -257,15 +364,24 @@ function EditEventPage() {
                 placeholder="e.g. John Doe, Jane Doe, Gator Events Club"
                 value={form.host}
                 onChange={handleChange}
+                maxLength={HOST_MAX_LENGTH}
                 required
               />
             </div>
 
             <div className="ce-field">
-              <label>Start Date and Time</label>
+              <div className="ce-label-row">
+                <label>Start Date and Time</label>
+                {showDateReset && (
+                  <button type="button" className="ce-inline-action" onClick={handleResetDates}>
+                    Reset to defaults
+                  </button>
+                )}
+              </div>
               <input
                 type="datetime-local"
                 name="date"
+                className={!startTouched ? 'ce-input-placeholder-state' : ''}
                 min={getMinDateTime()}
                 value={form.date}
                 onChange={handleChange}
@@ -279,6 +395,7 @@ function EditEventPage() {
                 <input
                   type="datetime-local"
                   name="end_date"
+                  className={!endTouched ? 'ce-input-placeholder-state' : ''}
                   min={getEndMinDateTime()}
                   value={form.end_date}
                   onChange={handleChange}
@@ -295,8 +412,32 @@ function EditEventPage() {
                 placeholder="e.g. Reitz Union Room 2365, or Off-Campus address"
                 value={form.location}
                 onChange={handleChange}
+                maxLength={LOCATION_MAX_LENGTH}
                 required
               />
+            </div>
+
+            <div className="ce-field">
+              <label>Preferences</label>
+              <div className="ce-toggle-row">
+                <button
+                  type="button"
+                  className={`ce-toggle-btn ${form.location_types.includes('on-campus') ? 'active' : ''}`}
+                  onClick={() => toggleLocationType('on-campus')}
+                >
+                  On-Campus
+                </button>
+                <button
+                  type="button"
+                  className={`ce-toggle-btn ${form.location_types.includes('off-campus') ? 'active' : ''}`}
+                  onClick={() => toggleLocationType('off-campus')}
+                >
+                  Off-Campus
+                </button>
+              </div>
+              {form.location_types.length === 0 && (
+                <p className="ce-field-hint">Select all that apply for your event.</p>
+              )}
             </div>
 
             <div className="ce-field">
@@ -307,8 +448,14 @@ function EditEventPage() {
                 placeholder="Tell people what to expect, the vibe, the agenda, who it's for, and why they shouldn't miss it."
                 value={form.description}
                 onChange={handleChange}
+                onBlur={() => setForm((previousForm) => ({
+                  ...previousForm,
+                  description: normalizeDescriptionInput(previousForm.description),
+                }))}
+                maxLength={DESCRIPTION_MAX_LENGTH}
                 required
               />
+              <p className="ce-field-hint ce-field-counter">{getEffectiveCharacterCount(form.description, { multiline: true })} / {DESCRIPTION_MAX_LENGTH} characters</p>
             </div>
 
             {error && <p className="ce-error">{error}</p>}
@@ -317,11 +464,11 @@ function EditEventPage() {
               <button type="submit" className="ce-btn-primary" disabled={saving}>
                 {saving ? 'Saving...' : 'Save Changes →'}
               </button>
-              <button type="button" className="ce-btn-secondary ce-btn-danger" onClick={handleDelete} disabled={saving}>
-                Delete
-              </button>
               <button type="button" className="ce-btn-secondary" onClick={() => { if (confirmLeave()) navigate('/my-events'); }}>
                 Cancel
+              </button>
+              <button type="button" className="ce-btn-danger ce-btn-danger-right" onClick={handleDelete} disabled={saving}>
+                Delete
               </button>
             </div>
           </form>

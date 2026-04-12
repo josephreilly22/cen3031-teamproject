@@ -96,6 +96,7 @@
   color: #1a1a2e;
   background: rgba(255, 255, 255, 0.75);
   resize: vertical;
+  min-height: calc(1.6em + 28px);
   outline: none;
   transition: border-color 0.2s;
   line-height: 1.6;
@@ -116,7 +117,7 @@
   margin-top: 4px;
 }
 
-/* Event type toggle buttons */
+/* Preferences toggle buttons */
 .event-type-buttons {
   display: flex;
   gap: 12px;

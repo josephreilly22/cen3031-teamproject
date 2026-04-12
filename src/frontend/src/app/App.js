@@ -5,6 +5,7 @@ import HostRegistrationPage from '../pages/HostRegistrationPage';
 import AboutPage from '../pages/AboutPage';
 import SignupPage from '../pages/SignupPage';
 import DashboardPage from '../pages/DashboardPage';
+import EventDetailsPage from '../pages/EventDetailsPage';
 import ProfilePage from '../pages/ProfilePage';
 import OnboardingPage from '../pages/OnboardingPage';
 import AdminDashboard from '../pages/AdminDashboard';
@@ -72,6 +73,7 @@ function App() {
         <Route path="/about" element={<AboutPage />} />
         <Route path="/signup" element={<SignupPage />} />
         <Route path="/dashboard" element={<DashboardPage />} />
+        <Route path="/dashboard/:eventId" element={<EventDetailsPage />} />
         <Route path="/profile" element={<ProfilePage />} />
         <Route path="/onboarding" element={<OnboardingPage />} />
         <Route path="/admin" element={<AdminDashboard />} />
