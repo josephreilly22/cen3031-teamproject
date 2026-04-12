@@ -5,11 +5,6 @@ from modules.database import database
 
 # Variables
 events_database = database("Events")
-users_database = database("Users")
-EVENT_TITLE_MAX_LENGTH = 32
-EVENT_HOST_MAX_LENGTH = 64
-EVENT_LOCATION_MAX_LENGTH = 128
-EVENT_DESCRIPTION_MAX_LENGTH = 1024
 
 # Functions
 def _parse_event_datetime(date: str):
@@ -18,85 +13,16 @@ def _parse_event_datetime(date: str):
     except ValueError:
         raise ValueError("Invalid event date and time")
 
-def _same_event_minute(first_date: str, second_date: str):
-    first_time = _parse_event_datetime(first_date).replace(second=0, microsecond=0)
-    second_time = _parse_event_datetime(second_date).replace(second=0, microsecond=0)
-    return first_time == second_time
-
-def _validate_event_window(start_date: str, end_date: str, allow_existing_past_start: bool = False):
+def _validate_event_window(start_date: str, end_date: str):
     start_time = _parse_event_datetime(start_date)
     end_time = _parse_event_datetime(end_date)
-    current_minute = datetime.now(start_time.tzinfo).replace(second=0, microsecond=0)
 
-    if not allow_existing_past_start and start_time < current_minute:
+    if start_time < datetime.now(start_time.tzinfo):
         raise ValueError("Event date and time cannot be in the past")
     if end_time < start_time:
         raise ValueError("End date and time cannot be before the start")
 
     return start_date, end_date
-
-def _normalize_location_types(location_types):
-    if location_types is None:
-        return []
-
-    if not isinstance(location_types, list):
-        raise ValueError("Invalid event location type")
-
-    allowed = []
-    for item in location_types:
-        if not isinstance(item, str):
-            continue
-        normalized = item.strip()
-        if normalized in {"on-campus", "off-campus"} and normalized not in allowed:
-            allowed.append(normalized)
-
-    return allowed
-
-def _normalize_event_description(description: str):
-    if not isinstance(description, str):
-        raise ValueError("Description must be a string")
-
-    trimmed = description.strip()
-    if len(trimmed) > EVENT_DESCRIPTION_MAX_LENGTH:
-        raise ValueError("Event description is too long")
-
-    return trimmed
-
-def _normalize_event_title(title: str):
-    if not isinstance(title, str):
-        raise ValueError("Title must be a string")
-
-    normalized = " ".join(title.replace("\r", " ").replace("\n", " ").split())
-    if not normalized:
-        raise ValueError("Title is required")
-    if len(normalized) > EVENT_TITLE_MAX_LENGTH:
-        raise ValueError("Event title is too long")
-
-    return normalized
-
-def _normalize_event_host(host: str):
-    if not isinstance(host, str):
-        raise ValueError("Host must be a string")
-
-    normalized = " ".join(host.strip().split())
-    if not normalized:
-        raise ValueError("Host is required")
-    if len(normalized) > EVENT_HOST_MAX_LENGTH:
-        raise ValueError("Event host is too long")
-
-    return normalized
-
-def _normalize_event_location(location: str):
-    if not isinstance(location, str):
-        raise ValueError("Location must be a string")
-
-    trimmed = location.rstrip()
-    if not trimmed:
-        raise ValueError("Location is required")
-    if len(trimmed) > EVENT_LOCATION_MAX_LENGTH:
-        raise ValueError("Event location is too long")
-
-    return trimmed
 
 def _event_expiry_time(event: dict):
     end_date = event.get("end_date") or event.get("date")
@@ -115,22 +41,8 @@ def _purge_expired_events():
         if expiry_time is not None and expiry_time < now:
             events_database.remove_document(doc.get("key"))
 
-def _can_manage_event(actor_email: str, event: dict):
-    if event.get("owner_email") == actor_email:
-        return True
-
-    user, _ = users_database.get_document(actor_email)
-    return isinstance(user, dict) and user.get("role") == "admin"
-
-def create_event(owner_email: str, title: str, host: str, date: str, end_date: str, location: str, location_types, description: str):
-    title = _normalize_event_title(title)
-    host = _normalize_event_host(host)
+def create_event(owner_email: str, title: str, host: str, date: str, end_date: str, location: str, description: str):
     date, end_date = _validate_event_window(date, end_date)
-    location = _normalize_event_location(location)
-    location_types = _normalize_location_types(location_types)
-    description = _normalize_event_description(description)
-    if not location_types:
-        raise ValueError("Select at least one event location type")
     event_id = str(uuid.uuid4())
     event = {
         "id": event_id,
@@ -140,7 +52,6 @@ def create_event(owner_email: str, title: str, host: str, date: str, end_date: s
         "date": date,
         "end_date": end_date,
         "location": location,
-        "location_types": location_types,
         "description": description,
         "created_at": datetime.utcnow().isoformat(),
     }
@@ -170,23 +81,15 @@ def get_event(event_id: str):
         return {"success": False, "message": "Event not found"}
     return {"success": True, "event": event}
 
-def update_event(event_id: str, owner_email: str, title: str, host: str, date: str, end_date: str, location: str, location_types, description: str):
+def update_event(event_id: str, owner_email: str, title: str, host: str, date: str, end_date: str, location: str, description: str):
     event, _ = events_database.get_document(event_id)
     if event is None:
         return {"success": False, "message": "Event not found"}
 
-    if not _can_manage_event(owner_email, event):
+    if event.get("owner_email") != owner_email:
         return {"success": False, "message": "You can only edit your own events"}
 
-    title = _normalize_event_title(title)
-    host = _normalize_event_host(host)
-    allow_existing_past_start = _same_event_minute(date, event.get("date"))
-    date, end_date = _validate_event_window(date, end_date, allow_existing_past_start=allow_existing_past_start)
-    location = _normalize_event_location(location)
-    location_types = _normalize_location_types(location_types)
-    description = _normalize_event_description(description)
-    if not location_types:
-        raise ValueError("Select at least one event location type")
+    date, end_date = _validate_event_window(date, end_date)
 
     event.update({
         "title": title,
@@ -194,7 +97,6 @@ def update_event(event_id: str, owner_email: str, title: str, host: str, date: s
         "date": date,
         "end_date": end_date,
         "location": location,
-        "location_types": location_types,
         "description": description,
     })
     events_database.set_document(event_id, event)
@@ -205,7 +107,7 @@ def delete_event(event_id: str, owner_email: str):
     if event is None:
         return {"success": False, "message": "Event not found"}
 
-    if not _can_manage_event(owner_email, event):
+    if event.get("owner_email") != owner_email:
         return {"success": False, "message": "You can only delete your own events"}
 
     events_database.remove_document(event_id)

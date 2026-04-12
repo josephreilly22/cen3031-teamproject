@@ -3,9 +3,6 @@ import re
 from modules.database import database
 
 EMAIL_PATTERN = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
-NAME_MAX_LENGTH = 64
-PASSWORD_MAX_LENGTH = 256
-INTERESTS_MAX_LENGTH = 256
 
 users_database = database("Users")
 host_requests_database = database("HostRequests")
@@ -21,25 +18,11 @@ def _validate_email(email: str):
 def _validate_name(name: str, field_name: str):
     label = field_name.replace("_", " ").capitalize()
     if not isinstance(name, str) or not name.strip(): raise ValueError(f"{label} is required")
-    normalized = " ".join(name.strip().split())
-    if len(normalized) > NAME_MAX_LENGTH:
-        raise ValueError(f"{label} is too long")
-    return normalized
+    return name.strip()
 
 def _validate_password(password: str):
     if not isinstance(password, str) or len(password) < 8: raise ValueError("Password must be at least 8 characters")
-    if len(password) > PASSWORD_MAX_LENGTH: raise ValueError("Password is too long")
     return password
-
-def _normalize_interests(interests: str):
-    if not isinstance(interests, str):
-        raise ValueError("Interests must be a string")
-
-    trimmed = interests.rstrip()
-    if len(trimmed) > INTERESTS_MAX_LENGTH:
-        raise ValueError("Interests are too long")
-
-    return trimmed
 
 def _user_template(first_name: str, last_name: str, email: str, password: str, role: str = "user"):
     return {
@@ -108,7 +91,6 @@ def get_profile(email: str):
         "first_name": user.get("first_name", ""),
         "last_name": user.get("last_name", ""),
         "role": user.get("role", "user"),
-        "organization": user.get("organization", ""),
         "interests": user.get("interests", ""),
         "event_type": user.get("event_type", ""),
         "onboarding_complete": bool(user.get("onboarding_complete", False)),
@@ -193,7 +175,7 @@ def get_admin_users():
     hosters.sort(key=lambda user: (user["organization"], user["first_name"], user["last_name"], user["email"]))
     return {"success": True, "admins": admins, "hosters": hosters}
 
-def remove_hoster(email: str):
+def banish_hoster(email: str):
     email = _validate_email(email)
 
     user, _ = users_database.get_document(email)
@@ -203,7 +185,7 @@ def remove_hoster(email: str):
     user["role"] = "user"
     user["organization"] = ""
     users_database.set_document(email, user)
-    return {"success": True, "message": "Hoster removed", "role": "user"}
+    return {"success": True, "message": "Hoster role removed", "role": "user"}
 
 def update_profile(
     email: str,
@@ -218,9 +200,8 @@ def update_profile(
     email = _validate_email(email)
     first_name = _validate_name(first_name, "first_name")
     last_name = _validate_name(last_name, "last_name")
-    interests = _normalize_interests(interests)
 
-    if event_type not in {"on-campus", "off-campus", "both"}: return {"success": False, "message": "Invalid preference"}
+    if event_type not in {"on-campus", "off-campus", "both"}: return {"success": False, "message": "Invalid event type"}
 
     user, _ = users_database.get_document(email)
     if user is None: return {"success": False, "message": "User not found"}
@@ -232,7 +213,7 @@ def update_profile(
 
     user["first_name"] = first_name
     user["last_name"] = last_name
-    user["interests"] = interests
+    user["interests"] = interests.strip()
     user["event_type"] = event_type
 
     if onboarding_complete is not None: user["onboarding_complete"] = bool(onboarding_complete)
@@ -251,5 +232,5 @@ __all__ = [
     "get_profile",
     "update_profile",
     "get_admin_users",
-    "remove_hoster",
+    "banish_hoster",
 ]
