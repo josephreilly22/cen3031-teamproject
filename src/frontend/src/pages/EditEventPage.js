@@ -15,6 +15,9 @@ function EditEventPage() {
   const HOST_MAX_LENGTH = 64;
   const LOCATION_MAX_LENGTH = 128;
   const DESCRIPTION_MAX_LENGTH = 1024;
+  const [coordinates, setCoordinates] = useState(null);
+  const [coordinatesLoading, setCoordinatesLoading] = useState(false);
+  const [coordinatesError, setCoordinatesError] = useState('');
   const getMinDateTime = () => {
     const now = new Date();
     const pad = (value) => String(value).padStart(2, '0');
@@ -63,6 +66,36 @@ function EditEventPage() {
     parsed.setHours(parsed.getHours() + 1);
     return normalizeDateTime(parsed.toISOString());
   };
+  const formatCoordinates = (value) => {
+    if (!value || !Array.isArray(value) || value.length !== 2) {
+      return 'Not set';
+    }
+
+    return `${value[0]}, ${value[1]}`;
+  };
+  const handleGetCoordinates = () => {
+    if (!navigator.geolocation) {
+      setCoordinatesError('Location access is not supported in this browser.');
+      return;
+    }
+
+    setCoordinatesError('');
+    setCoordinatesLoading(true);
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        setCoordinates([
+          Number(position.coords.latitude.toFixed(6)),
+          Number(position.coords.longitude.toFixed(6)),
+        ]);
+        setCoordinatesLoading(false);
+      },
+      () => {
+        setCoordinatesError('Location permission was denied or unavailable.');
+        setCoordinatesLoading(false);
+      },
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 },
+    );
+  };
 
   useEffect(() => {
     if (!session.signedIn) {
@@ -93,6 +126,7 @@ function EditEventPage() {
             location_types: Array.isArray(event.location_types) ? event.location_types : [],
             description: event.description || '',
           });
+          setCoordinates(Array.isArray(event.coordinates) ? event.coordinates : null);
           setInitialForm({
             title: event.title || '',
             host: event.host || session.fullName || session.email,
@@ -274,6 +308,7 @@ function EditEventPage() {
           location: form.location,
           location_types: form.location_types,
           description: normalizedDescription,
+          coordinates,
         }),
       });
       const data = await res.json();
@@ -415,6 +450,26 @@ function EditEventPage() {
                 maxLength={LOCATION_MAX_LENGTH}
                 required
               />
+            </div>
+
+            <div className="ce-field">
+              <div className="ce-label-row">
+                <label>Coordinates <span className="ce-label-note">(optional)</span></label>
+                <button type="button" className="ce-inline-action" onClick={handleGetCoordinates} disabled={coordinatesLoading}>
+                  {coordinatesLoading ? 'Getting coordinates...' : 'Get Coordinates'}
+                </button>
+              </div>
+              <input
+                type="text"
+                value={formatCoordinates(coordinates)}
+                placeholder="-, -"
+                readOnly
+                className="ce-input-placeholder-state"
+              />
+              <p className="ce-field-hint">
+                Optional. Uses your browser location and stores latitude, longitude for location-aware matching.
+              </p>
+              {coordinatesError && <p className="ce-field-hint">{coordinatesError}</p>}
             </div>
 
             <div className="ce-field">

@@ -5,6 +5,63 @@ import '../styles/DashboardPage.css';
 import SignedInNavbar from '../components/SignedInNavbar';
 import { getAuthSession } from '../utils/authSession';
 
+const LOCATION_ENABLED_KEY = 'eventplanner.locationEnabled';
+const LOCATION_COORDS_KEY = 'eventplanner.locationCoords';
+
+function loadStoredLocation() {
+  try {
+    const enabled = localStorage.getItem(LOCATION_ENABLED_KEY) === 'true';
+    const coordsRaw = localStorage.getItem(LOCATION_COORDS_KEY);
+    const coords = coordsRaw ? JSON.parse(coordsRaw) : null;
+
+    if (!enabled || !Array.isArray(coords) || coords.length !== 2) {
+      return { enabled: false, coords: null };
+    }
+
+    const [lat, lng] = coords;
+    if (!Number.isFinite(lat) || !Number.isFinite(lng)) {
+      return { enabled: false, coords: null };
+    }
+
+    return { enabled: true, coords: [lat, lng] };
+  } catch {
+    return { enabled: false, coords: null };
+  }
+}
+
+function getDistanceInMiles(from, to) {
+  if (!Array.isArray(from) || !Array.isArray(to) || from.length !== 2 || to.length !== 2) {
+    return null;
+  }
+
+  const [fromLat, fromLng] = from;
+  const [toLat, toLng] = to;
+  if (![fromLat, fromLng, toLat, toLng].every((value) => Number.isFinite(value))) {
+    return null;
+  }
+
+  const toRadians = (value) => (value * Math.PI) / 180;
+  const earthRadiusMiles = 3958.8;
+  const latDelta = toRadians(toLat - fromLat);
+  const lngDelta = toRadians(toLng - fromLng);
+  const a = Math.sin(latDelta / 2) ** 2
+    + Math.cos(toRadians(fromLat)) * Math.cos(toRadians(toLat)) * Math.sin(lngDelta / 2) ** 2;
+  return earthRadiusMiles * (2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a)));
+}
+
+function formatDistanceLabel(distanceMiles) {
+  if (!Number.isFinite(distanceMiles)) {
+    return '';
+  }
+
+  if (distanceMiles < 1) {
+    const feetAway = Math.max(1, Math.round(distanceMiles * 5280));
+    return `${feetAway} ft`;
+  }
+
+  return `${distanceMiles.toFixed(distanceMiles >= 10 ? 0 : 1)} mi`;
+}
+
 const avatarGradients = [
   ['#4f7ed8', '#8a7ae6'],
   ['#3b8ea5', '#6ec6ca'],
@@ -52,8 +109,14 @@ function EventDetailsPage() {
   const [attendLoading, setAttendLoading] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [locationEnabled, setLocationEnabled] = useState(false);
+  const [userLocation, setUserLocation] = useState(null);
 
   useEffect(() => {
+    const storedLocation = loadStoredLocation();
+    setLocationEnabled(storedLocation.enabled);
+    setUserLocation(storedLocation.coords);
+
     if (!session.signedIn) {
       navigate('/login');
       return;
@@ -277,8 +340,12 @@ function EventDetailsPage() {
 
   const live = event ? isEventLive(event.date, event.end_date) : false;
   const campusLabel = event ? formatLocationTypes(event.location_types) : '';
+  const distanceLabel = locationEnabled && userLocation && Array.isArray(event?.coordinates) && event.coordinates.length === 2
+    ? formatDistanceLabel(getDistanceInMiles(userLocation, event.coordinates.map((value) => Number(value))))
+    : '';
   const canEditEvent = isOwnerOrAdmin;
   const canAttendEvent = !isEventOwner;
+  const canReportEvent = !isEventOwner;
   const visibleAttendees = [
     ...(event?.owner_email
       ? [{
@@ -346,6 +413,12 @@ function EventDetailsPage() {
                   <p className="event-details-section-label">Location</p>
                   <p className="event-details-location">
                     {'\u{1F4CD}'} {event.location || 'Location not listed'}
+                    {locationEnabled && (
+                      <span className="event-location-distance">
+                        {' '}
+                        {distanceLabel || 'N/A'}
+                      </span>
+                    )}
                   </p>
                 </div>
 
@@ -372,14 +445,27 @@ function EventDetailsPage() {
                   <p className="event-details-meta-value">{formatDate(event.end_date || event.date)}</p>
                 </div>
 
-                {canEditEvent && (
-                  <button
-                    type="button"
-                    className="event-details-edit-btn"
-                    onClick={() => navigate(`/edit-event/${encodeURIComponent(event.id)}`)}
-                  >
-                    Edit Event
-                  </button>
+                {(canEditEvent || canReportEvent) && (
+                  <div className="event-details-action-row">
+                    {canEditEvent && (
+                      <button
+                        type="button"
+                        className="event-details-edit-btn"
+                        onClick={() => navigate(`/edit-event/${encodeURIComponent(event.id)}`)}
+                      >
+                        Edit Event
+                      </button>
+                    )}
+                    {canReportEvent && (
+                      <button
+                        type="button"
+                        className="event-details-report-btn"
+                        onClick={() => navigate(`/report-event/${encodeURIComponent(event.id)}`)}
+                      >
+                        Report Event
+                      </button>
+                    )}
+                  </div>
                 )}
               </aside>
 

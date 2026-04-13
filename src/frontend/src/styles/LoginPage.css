@@ -97,17 +97,22 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 12px;
 }
 
-.forgot-link {
-  font-size: 0.85rem;
+.password-inline-action {
+  border: none;
+  background: none;
   color: #3b3fa0;
+  font-size: 0.82rem;
+  font-weight: 700;
+  font-family: inherit;
   cursor: pointer;
-  font-weight: 500;
+  padding: 0;
 }
 
-.forgot-link:hover {
-  text-decoration: underline;
+.password-inline-action:hover {
+  color: #2e3280;
 }
 
 .form-group input {

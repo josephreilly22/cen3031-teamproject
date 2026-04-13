@@ -226,6 +226,15 @@
   color: #777;
 }
 
+.my-event-location-distance {
+  font-size: 0.7rem;
+  color: #7b80a8;
+  font-weight: 800;
+  font-family: inherit;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
 .my-event-desc {
   color: #666;
   line-height: 1.55;

@@ -17,30 +17,14 @@ function ProfilePage() {
   const preferenceOptions = ['on-campus', 'off-campus'];
   const normalizeInterestsInput = (value) => value.replace(/\s+$/, '');
   const eventTypeToSelections = (value) => {
-    if (value === 'both') {
-      return [...preferenceOptions];
+    if (!Array.isArray(value)) {
+      return [];
     }
 
-    if (preferenceOptions.includes(value)) {
-      return [value];
-    }
-
-    return [];
+    return preferenceOptions.filter((option) => value.includes(option));
   };
   const selectionsToEventType = (selections) => {
-    if (selections.includes('on-campus') && selections.includes('off-campus')) {
-      return 'both';
-    }
-
-    if (selections.includes('on-campus')) {
-      return 'on-campus';
-    }
-
-    if (selections.includes('off-campus')) {
-      return 'off-campus';
-    }
-
-    return null;
+    return preferenceOptions.filter((option) => selections.includes(option));
   };
 
   const [firstName, setFirstName] = useState(session.firstName || '');
@@ -48,8 +32,10 @@ function ProfilePage() {
   const [role, setRole] = useState(session.role || 'user');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [interests, setInterests] = useState('');
-  const [eventType, setEventType] = useState(null);
+  const [eventType, setEventType] = useState([]);
   const [initialProfile, setInitialProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [saved, setSaved] = useState(false);
@@ -81,16 +67,26 @@ function ProfilePage() {
       return;
     }
 
+    if (!session.onboardingComplete) {
+      navigate('/onboarding');
+      return;
+    }
+
     fetch(`http://localhost:8000/profile?email=${encodeURIComponent(session.email)}`)
       .then((r) => r.json())
       .then((data) => {
         if (data.success) {
+          if (!data.onboarding_complete) {
+            navigate('/onboarding');
+            return;
+          }
+
           const profileState = {
             firstName: data.first_name || session.firstName || '',
             lastName: data.last_name || session.lastName || '',
             role: data.role || session.role || 'user',
             interests: normalizeInterestsInput(data.interests || ''),
-            eventType: data.event_type || null,
+            eventType: Array.isArray(data.event_type) ? data.event_type : [],
           };
 
           setFirstName(profileState.firstName);
@@ -105,7 +101,7 @@ function ProfilePage() {
       })
       .catch(() => {})
       .finally(() => setLoading(false));
-  }, [navigate, session.email, session.firstName, session.lastName, session.signedIn]);
+  }, [navigate, session.email, session.firstName, session.lastName, session.onboardingComplete, session.signedIn]);
 
   useEffect(() => {
     if (loading) {
@@ -143,7 +139,7 @@ function ProfilePage() {
       firstName !== initialProfile.firstName ||
       lastName !== initialProfile.lastName ||
       interests !== initialProfile.interests ||
-      eventType !== initialProfile.eventType ||
+      JSON.stringify(eventType) !== JSON.stringify(initialProfile.eventType) ||
       ((password || confirmPassword) && confirmPassword && (password !== '' || confirmPassword !== ''))
     )
   );
@@ -178,7 +174,7 @@ function ProfilePage() {
       return;
     }
 
-    if (!eventType) {
+    if (!eventType.length) {
       setError('Please select an event preference.');
       return;
     }
@@ -200,7 +196,7 @@ function ProfilePage() {
           first_name: firstName,
           last_name: lastName,
           interests: nextInterests,
-          event_type: eventType,
+          event_type: [...eventType],
           password,
           confirm_password: confirmPassword,
         }),
@@ -213,7 +209,7 @@ function ProfilePage() {
           lastName: lastName.trim(),
           role,
           interests: nextInterests,
-          eventType,
+          eventType: [...eventType],
         };
 
         setUserName(firstName.trim(), lastName.trim());
@@ -358,9 +354,20 @@ function ProfilePage() {
                 </div>
 
                 <div className="form-group">
-                  <label htmlFor="profilePassword">Password</label>
+                  <div className="password-label-row">
+                    <label htmlFor="profilePassword">Password</label>
+                    {password && (
+                      <button
+                        type="button"
+                        className="password-inline-action"
+                        onClick={() => setShowPassword((current) => !current)}
+                      >
+                        {showPassword ? 'Hide password' : 'Show password'}
+                      </button>
+                    )}
+                  </div>
                   <input
-                    type="password"
+                    type={showPassword ? 'text' : 'password'}
                     id="profilePassword"
                     placeholder="••••••••"
                     value={password}
@@ -370,9 +377,20 @@ function ProfilePage() {
 
                 {password && (
                   <div className="form-group">
-                    <label htmlFor="profileConfirmPassword">Confirm Password</label>
+                    <div className="password-label-row">
+                      <label htmlFor="profileConfirmPassword">Confirm Password</label>
+                      {confirmPassword && (
+                        <button
+                          type="button"
+                          className="password-inline-action"
+                          onClick={() => setShowConfirmPassword((current) => !current)}
+                        >
+                          {showConfirmPassword ? 'Hide password' : 'Show password'}
+                        </button>
+                      )}
+                    </div>
                     <input
-                      type="password"
+                      type={showConfirmPassword ? 'text' : 'password'}
                       id="profileConfirmPassword"
                       placeholder="••••••••"
                       value={confirmPassword}
@@ -386,7 +404,7 @@ function ProfilePage() {
             <div className="onboarding-card">
               <div className="card-label-row">
                 <span className="card-icon-bubble icon-blue" aria-hidden="true">✨</span>
-                <h2 className="card-section-title">Your Interests</h2>
+                <h2 className="card-section-title">Your Interests <span className="section-title-note">(optional)</span></h2>
               </div>
               <p className="card-section-sub">
                 What topics, activities, or themes get you excited? This helps power your AI-personalized event suggestions.

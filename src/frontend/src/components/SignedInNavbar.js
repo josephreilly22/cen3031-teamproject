@@ -243,6 +243,13 @@ function SignedInNavbar({ title, actionLabel, actionPath, actions, onBeforeNavig
     return path;
   };
 
+  const resolveProfilePath = () => {
+    if (!onboardingComplete) {
+      return '/onboarding';
+    }
+    return '/profile';
+  };
+
   const getInitials = () => {
     const first = session.firstName?.[0] || '';
     const last = session.lastName?.[0] || '';
@@ -279,8 +286,8 @@ function SignedInNavbar({ title, actionLabel, actionPath, actions, onBeforeNavig
       className={`dashboard-navbar ${showTitleMask ? 'dashboard-navbar-title-mask' : ''}`}
     >
       <div className="logo signed-in-logo" onClick={() => navigate('/')} style={{ cursor: 'pointer' }}>
-        <img src="/logo.png" alt="Event Planner" className="logo-icon" />
-        <span className="logo-text">Event Planners</span>
+        <img src="/logo.png" alt="EventPlanner8" className="logo-icon" />
+        <span className="logo-text">EventPlanner8</span>
       </div>
       <span ref={titleRef} className="navbar-title">{title}</span>
       <div
@@ -312,7 +319,7 @@ function SignedInNavbar({ title, actionLabel, actionPath, actions, onBeforeNavig
           <button
             type="button"
             className="nav-avatar"
-            onClick={() => guardedNavigate('/profile')}
+            onClick={() => guardedNavigate(resolveProfilePath())}
             aria-label="Profile"
             title="Profile"
             style={{ background: getGradientForUser() }}

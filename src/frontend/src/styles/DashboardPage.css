@@ -275,6 +275,8 @@
   grid-template-columns: repeat(5, minmax(0, 1fr));
   gap: 22px;
   align-items: stretch;
+  position: relative;
+  z-index: 1;
 }
 
 /* ── Event Tile ── */
@@ -449,6 +451,15 @@
   color: #777;
 }
 
+.event-location-distance {
+  font-size: 0.7rem;
+  color: #7b80a8;
+  font-weight: 800;
+  font-family: inherit;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
 .event-campus-tags {
   display: flex;
   gap: 8px;
@@ -488,6 +499,8 @@
 
 .events-section-header {
   margin-bottom: 20px;
+  position: relative;
+  z-index: 2;
 }
 
 .events-section-header--with-actions {
@@ -496,6 +509,65 @@
   justify-content: space-between;
   gap: 16px;
   flex-wrap: wrap;
+  z-index: 3;
+}
+
+.events-sort-group {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-left: auto;
+}
+
+.events-location-btn {
+  width: 138px;
+  flex: 0 0 138px;
+  border: 1px solid rgba(59, 63, 160, 0.16);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.64);
+  color: #2e3280;
+  box-shadow: 0 6px 16px rgba(59, 63, 160, 0.06);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  font: inherit;
+  font-size: 0.7rem;
+  font-weight: 800;
+  line-height: 1.2;
+  min-height: 48px;
+  padding: 0 14px;
+  cursor: pointer;
+  white-space: nowrap;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  transition: background 0.16s ease, border-color 0.16s ease, color 0.16s ease;
+}
+
+.events-location-btn-state {
+  letter-spacing: 0;
+  text-transform: none;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #2e3280;
+  margin-left: 6px;
+}
+
+.events-location-btn-label {
+  color: inherit;
+}
+
+.events-location-btn--active {
+  background: rgba(59, 63, 160, 0.12);
+  border-color: rgba(59, 63, 160, 0.34);
+}
+
+.events-location-btn:hover:not(:disabled) {
+  background: rgba(59, 63, 160, 0.08);
+  border-color: rgba(59, 63, 160, 0.28);
+}
+
+.events-location-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.75;
 }
 
 .events-sort-control {
@@ -504,8 +576,8 @@
   align-items: center;
   gap: 8px;
   margin-left: auto;
-  height: 56px;
-  padding: 6px 10px;
+  height: 48px;
+  padding: 4px 8px;
   border-radius: 999px;
   background: rgba(255, 255, 255, 0.5);
   border: 1px solid rgba(59, 63, 160, 0.12);
@@ -520,19 +592,20 @@
 }
 
 .events-sort-label {
-  font-size: 0.76rem;
+  font-size: 0.7rem;
   font-weight: 800;
   color: #7b80a8;
   letter-spacing: 0.06em;
   line-height: 1;
   text-transform: uppercase;
   white-space: nowrap;
+  padding-left: 8px;
 }
 
 .events-sort-box {
   position: relative;
   align-self: flex-start;
-  min-width: 206px;
+  min-width: 186px;
   border: 1px solid rgba(59, 63, 160, 0.16);
   border-radius: 999px;
   background: rgb(255, 250, 253);
@@ -555,11 +628,11 @@
   background: transparent;
   color: #2e3280;
   font: inherit;
-  font-size: 0.82rem;
+  font-size: 0.78rem;
   font-weight: 700;
   line-height: 1.2;
-  min-height: 42px;
-  padding: 10px 22px 10px 20px;
+  min-height: 38px;
+  padding: 8px 18px 8px 16px;
   cursor: pointer;
   outline: none;
   text-align: left;
@@ -605,11 +678,11 @@
   background: transparent;
   color: #2e3280;
   font: inherit;
-  font-size: 0.82rem;
+  font-size: 0.78rem;
   font-weight: 700;
   line-height: 1.2;
-  min-height: 42px;
-  padding: 8px 12px;
+  min-height: 36px;
+  padding: 7px 11px;
   cursor: pointer;
   text-align: left;
   transition: background 0.16s ease, color 0.16s ease;
@@ -847,6 +920,12 @@
   }
 }
 
+@media (max-width: 1120px) {
+  .events-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
 @media (max-width: 800px) {
   .dashboard-navbar {
     padding: 18px 20px;
@@ -865,14 +944,23 @@
     display: none;
   }
 
-  .events-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
   .events-sort-control {
     width: auto;
     justify-content: flex-end;
     margin-left: 0;
+  }
+
+  .events-sort-group {
+    width: 100%;
+    margin-left: 0;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+  }
+
+  .events-location-btn,
+  .events-sort-control {
+    width: 100%;
+    flex: 1 1 100%;
   }
 
   .events-sort-trigger {
@@ -882,6 +970,12 @@
 
   .events-sort-menu {
     max-width: none;
+  }
+}
+
+@media (max-width: 620px) {
+  .events-grid {
+    grid-template-columns: 1fr;
   }
 }
 

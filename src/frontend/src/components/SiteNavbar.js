@@ -241,8 +241,8 @@ function SiteNavbar({
   return (
     <nav ref={navbarRef} className="navbar">
       <div className="logo" onClick={() => navigate('/')} style={{ cursor: 'pointer' }}>
-        <img src="/logo.png" alt="Event Planner" className="logo-icon" />
-        <span className="logo-text">Event Planners</span>
+        <img src="/logo.png" alt="EventPlanner8" className="logo-icon" />
+        <span className="logo-text">EventPlanner8</span>
       </div>
       {title && <span ref={titleRef} className="site-navbar-title">{title}</span>}
       <div

@@ -72,6 +72,12 @@
   gap: 12px;
 }
 
+.ce-label-note {
+  color: #7b80a8;
+  font-size: 0.82em;
+  font-weight: 600;
+}
+
 .ce-inline-action {
   border: none;
   background: none;
@@ -307,4 +313,96 @@
   margin-top: 8px;
   flex-wrap: wrap;
   justify-content: center;
+}
+
+.report-event-content {
+  max-width: 720px;
+}
+
+.report-success-box {
+  margin: 0 auto 64px;
+}
+
+.report-back-btn {
+  align-self: flex-start;
+  background: none;
+  border: none;
+  border-radius: 999px;
+  padding: 0;
+  color: #7b80a8;
+  font-size: 0.76rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-family: inherit;
+  cursor: pointer;
+  transition: color 0.18s ease, transform 0.18s ease;
+}
+
+.report-back-btn:hover {
+  color: #5f6797;
+  transform: translateY(-1px);
+}
+
+.report-event-form {
+  gap: 24px;
+}
+
+.report-event-field {
+  gap: 10px;
+}
+
+.report-event-field label {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: #1a1a2e;
+}
+
+.report-event-reasons {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.report-reason-btn {
+  width: 100%;
+  min-width: 0;
+  flex: none;
+}
+
+.report-event-form .report-reason-btn:hover {
+  border-color: #c0392b;
+  color: #c0392b;
+}
+
+.report-event-form .report-reason-btn.active {
+  background: #c0392b;
+  border-color: #c0392b;
+  color: #fff;
+}
+
+.report-event-form .report-reason-btn.active:hover {
+  background: #c0392b;
+  border-color: #c0392b;
+  color: #fff;
+}
+
+.report-submit-btn {
+  min-width: 184px;
+}
+
+@media (max-width: 640px) {
+  .report-event-reasons {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .report-submit-btn {
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .report-event-reasons {
+    grid-template-columns: 1fr;
+  }
 }

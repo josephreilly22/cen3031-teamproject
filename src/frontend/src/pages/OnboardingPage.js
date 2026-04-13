@@ -14,36 +14,20 @@ function OnboardingPage() {
   const preferenceOptions = ['on-campus', 'off-campus'];
   const normalizeInterestsInput = (value) => value.replace(/\s+$/, '');
   const eventTypeToSelections = (value) => {
-    if (value === 'both') {
-      return [...preferenceOptions];
+    if (!Array.isArray(value)) {
+      return [];
     }
 
-    if (preferenceOptions.includes(value)) {
-      return [value];
-    }
-
-    return [];
+    return preferenceOptions.filter((option) => value.includes(option));
   };
   const selectionsToEventType = (selections) => {
-    if (selections.includes('on-campus') && selections.includes('off-campus')) {
-      return 'both';
-    }
-
-    if (selections.includes('on-campus')) {
-      return 'on-campus';
-    }
-
-    if (selections.includes('off-campus')) {
-      return 'off-campus';
-    }
-
-    return null;
+    return preferenceOptions.filter((option) => selections.includes(option));
   };
   const [interests, setInterests] = useState('');
-  const [eventType, setEventType] = useState(null);
+  const [eventType, setEventType] = useState([]);
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState('');
-  const hasUnsavedChanges = interests !== '' || eventType !== null;
+  const hasUnsavedChanges = interests !== '' || eventType.length > 0;
 
   const handleInterestsChange = (value) => {
     const nextValue = applyCharacterLimit(value, INTERESTS_MAX_LENGTH, { multiline: true });
@@ -79,7 +63,7 @@ function OnboardingPage() {
   }
 
   const handleSave = async () => {
-    if (!eventType) {
+    if (!eventType.length) {
       setError('Please select an event preference.');
       return;
     }
@@ -144,10 +128,10 @@ function OnboardingPage() {
         <div className="onboarding-card">
           <div className="card-label-row">
             <span className="card-icon-bubble icon-blue" aria-hidden="true">✨</span>
-            <h2 className="card-section-title">Your Interests</h2>
+            <h2 className="card-section-title">Your Interests <span className="section-title-note">(optional)</span></h2>
           </div>
           <p className="card-section-sub">
-            What topics, activities, or themes get you excited? The more specific, the better.
+            What topics, activities, or themes get you excited? This helps power your AI-personalized event suggestions.
           </p>
           <textarea
             className="interests-input"

@@ -148,6 +148,15 @@
   font-size: 0.95rem;
 }
 
+.event-details-location-distance {
+  font-size: 0.7rem;
+  color: #7b80a8;
+  font-weight: 800;
+  font-family: inherit;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
 .event-details-location-campus {
   color: inherit;
 }
@@ -180,8 +189,7 @@
 }
 
 .event-details-edit-btn {
-  margin-top: 4px;
-  align-self: flex-start;
+  flex: 1;
   background: #3b3fa0;
   color: #fff;
   border: none;
@@ -197,6 +205,33 @@
 
 .event-details-edit-btn:hover {
   background: #2e3280;
+}
+
+.event-details-action-row {
+  margin-top: 4px;
+  display: flex;
+  gap: 10px;
+  align-self: flex-start;
+  width: 100%;
+}
+
+.event-details-report-btn {
+  flex: 1;
+  background: #c0392b;
+  color: #fff;
+  border: none;
+  border-radius: 999px;
+  padding: 13px 26px;
+  height: 44px;
+  font-size: 0.97rem;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.event-details-report-btn:hover {
+  background: #a93226;
 }
 
 .event-details-attendance-card {
@@ -362,6 +397,10 @@
 
   .event-details-side-card {
     position: static;
+  }
+
+  .event-details-action-row {
+    width: 100%;
   }
 
   .event-details-attendance-card {

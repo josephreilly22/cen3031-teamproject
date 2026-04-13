@@ -16,9 +16,7 @@ function AboutPage() {
           <span className="highlight">love great events.</span>
         </h1>
         <p className="hero-sub">
-          Event Planners is a student-built platform from the University of Florida
-          connecting people with local events tailored to their interests, powered
-          by smart recommendations and a verified host ecosystem.
+          <strong>EventPlanner8</strong> is a student-built platform from the <strong>University of Florida</strong> connecting people with local events tailored to their interests, powered by smart recommendations and a verified host ecosystem.
         </p>
 
         <div className="hero-buttons about-actions">

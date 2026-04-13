@@ -78,6 +78,12 @@
   color: #1a1a2e;
 }
 
+.section-title-note {
+  color: #7b80a8;
+  font-size: 0.82em;
+  font-weight: 600;
+}
+
 .card-section-sub {
   color: #666;
   font-size: 0.93rem;

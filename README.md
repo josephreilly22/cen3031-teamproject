@@ -1,8 +1,8 @@
-# Event Planners
+# EventPlanner8
 
 > Your all-in-one platform for events near you.
 
-Whether you're trying to get more involved this year or just looking to try new things, **Event Planners** is the solution. Our platform connects users with local events tailored to their interests, powered by personalized recommendations and a secure, verified host ecosystem.
+Whether you're trying to get more involved this year or just looking to try new things, **EventPlanner8** is the solution. Our platform connects users with local events tailored to their interests, powered by personalized recommendations and a secure, verified host ecosystem.
 
 ---
 

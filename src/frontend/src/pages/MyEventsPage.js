@@ -5,13 +5,76 @@ import SignedInNavbar from '../components/SignedInNavbar';
 import OverflowTitle from '../components/OverflowTitle';
 import { getAuthSession } from '../utils/authSession';
 
+const LOCATION_ENABLED_KEY = 'eventplanner.locationEnabled';
+const LOCATION_COORDS_KEY = 'eventplanner.locationCoords';
+
+function loadStoredLocation() {
+  try {
+    const enabled = localStorage.getItem(LOCATION_ENABLED_KEY) === 'true';
+    const coordsRaw = localStorage.getItem(LOCATION_COORDS_KEY);
+    const coords = coordsRaw ? JSON.parse(coordsRaw) : null;
+
+    if (!enabled || !Array.isArray(coords) || coords.length !== 2) {
+      return { enabled: false, coords: null };
+    }
+
+    const [lat, lng] = coords;
+    if (!Number.isFinite(lat) || !Number.isFinite(lng)) {
+      return { enabled: false, coords: null };
+    }
+
+    return { enabled: true, coords: [lat, lng] };
+  } catch {
+    return { enabled: false, coords: null };
+  }
+}
+
+function getDistanceInMiles(from, to) {
+  if (!Array.isArray(from) || !Array.isArray(to) || from.length !== 2 || to.length !== 2) {
+    return null;
+  }
+
+  const [fromLat, fromLng] = from;
+  const [toLat, toLng] = to;
+  if (![fromLat, fromLng, toLat, toLng].every((value) => Number.isFinite(value))) {
+    return null;
+  }
+
+  const toRadians = (value) => (value * Math.PI) / 180;
+  const earthRadiusMiles = 3958.8;
+  const latDelta = toRadians(toLat - fromLat);
+  const lngDelta = toRadians(toLng - fromLng);
+  const a = Math.sin(latDelta / 2) ** 2
+    + Math.cos(toRadians(fromLat)) * Math.cos(toRadians(toLat)) * Math.sin(lngDelta / 2) ** 2;
+  return earthRadiusMiles * (2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a)));
+}
+
+function formatDistanceLabel(distanceMiles) {
+  if (!Number.isFinite(distanceMiles)) {
+    return '';
+  }
+
+  if (distanceMiles < 1) {
+    const feetAway = Math.max(1, Math.round(distanceMiles * 5280));
+    return `${feetAway} ft`;
+  }
+
+  return `${distanceMiles.toFixed(distanceMiles >= 10 ? 0 : 1)} mi`;
+}
+
 function MyEventsPage() {
   const navigate = useNavigate();
   const session = getAuthSession();
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [locationEnabled, setLocationEnabled] = useState(false);
+  const [userLocation, setUserLocation] = useState(null);
 
   useEffect(() => {
+    const storedLocation = loadStoredLocation();
+    setLocationEnabled(storedLocation.enabled);
+    setUserLocation(storedLocation.coords);
+
     if (!session.signedIn) { navigate('/login'); return; }
     if (session.role !== 'hoster' && session.role !== 'admin') { navigate('/dashboard'); return; }
 
@@ -95,6 +158,14 @@ function MyEventsPage() {
   };
 
   const campusLabelForEvent = (event) => formatLocationTypes(event.location_types);
+  const getEventDistanceLabel = (event) => {
+    if (!locationEnabled || !userLocation || !Array.isArray(event.coordinates) || event.coordinates.length !== 2) {
+      return '';
+    }
+
+    const eventCoords = event.coordinates.map((value) => Number(value));
+    return formatDistanceLabel(getDistanceInMiles(userLocation, eventCoords));
+  };
   const formatCardDescription = (value) => {
     const normalized = (value || '').trim();
     if (!normalized) {
@@ -160,6 +231,12 @@ function MyEventsPage() {
                 )}
                 <p className="my-event-location">
                   {'\u{1F4CD}'} {event.location}
+                  {locationEnabled && (
+                    <span className="my-event-location-distance">
+                      {' '}
+                      {getEventDistanceLabel(event) || 'N/A'}
+                    </span>
+                  )}
                 </p>
                 <div className="my-event-meta-group">
                   <p className="my-event-meta">{event.host}</p>
