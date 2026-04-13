@@ -7,11 +7,13 @@ from modules.engine import give_recommendation
 # Variables
 events_database = database("Events")
 users_database = database("Users")
+reports_database = database("EventReports")
 EVENT_TITLE_MAX_LENGTH = 32
 EVENT_HOST_MAX_LENGTH = 64
 EVENT_LOCATION_MAX_LENGTH = 128
 EVENT_DESCRIPTION_MAX_LENGTH = 1024
 AI_CHOICE_MAX_LENGTH = 64
+REPORT_REASONS = {"Spam", "Harassment", "Explicit", "Irrelevant", "Other"}
 
 # Functions
 def _parse_event_datetime(date: str):
@@ -234,6 +236,80 @@ def _can_manage_event(actor_email: str, event: dict):
 
     user, _ = users_database.get_document(actor_email)
     return isinstance(user, dict) and user.get("role") == "admin"
+
+def _normalize_report_reason(reason: str):
+    if not isinstance(reason, str):
+        raise ValueError("Reason must be a string")
+
+    normalized = " ".join(reason.strip().split())
+    if normalized not in REPORT_REASONS:
+        raise ValueError("Invalid report reason")
+
+    return normalized
+
+def _is_admin(email: str):
+    user, _ = users_database.get_document(email)
+    return isinstance(user, dict) and user.get("role") == "admin"
+
+def _report_sort_key(report: dict):
+    return report.get("created_at", "")
+
+def _group_reports_by_event(include_resolved: bool = False):
+    grouped_reports = {}
+
+    for doc in reports_database.get_collection():
+        report = doc.get("value")
+        if not isinstance(report, dict):
+            continue
+
+        if not include_resolved and report.get("status") == "resolved":
+            continue
+
+        event_id = str(report.get("event_id", "")).strip()
+        if not event_id:
+            continue
+
+        grouped_reports.setdefault(event_id, []).append(report)
+
+    return grouped_reports
+
+def _build_report_summary(event_id: str, reports: list[dict]):
+    if not reports:
+        return None
+
+    event, _ = events_database.get_document(event_id)
+    latest_report = max(reports, key=_report_sort_key)
+    reason_counts = {reason: 0 for reason in sorted(REPORT_REASONS)}
+    for report in reports:
+        reason = report.get("reason", "")
+        if reason in reason_counts:
+            reason_counts[reason] += 1
+
+    total_reports = sum(reason_counts.values())
+    if total_reports <= 0:
+        return None
+
+    return {
+        "event_id": event_id,
+        "event_title": (event or {}).get("title") or latest_report.get("event_title", "Untitled Event"),
+        "event_owner_email": (event or {}).get("owner_email") or latest_report.get("event_owner_email", ""),
+        "event_exists": isinstance(event, dict),
+        "total_reports": total_reports,
+        "latest_reported_at": latest_report.get("created_at", ""),
+        "reason_counts": reason_counts,
+    }
+
+def _remove_reports_for_event(event_id: str):
+    removed = 0
+    for doc in reports_database.get_collection():
+        report = doc.get("value")
+        if not isinstance(report, dict):
+            continue
+        if report.get("event_id") != event_id:
+            continue
+        reports_database.remove_document(doc.get("key"))
+        removed += 1
+    return removed
 
 def create_event(owner_email: str, title: str, host: str, date: str, end_date: str, location: str, location_types, description: str):
     title = _normalize_event_title(title)
@@ -483,6 +559,127 @@ def delete_event(event_id: str, owner_email: str):
     events_database.remove_document(event_id)
     return {"success": True, "message": "Event deleted"}
 
+def report_event(event_id: str, reporter_email: str, reason: str):
+    event, _ = events_database.get_document(event_id)
+    if event is None:
+        return {"success": False, "message": "Event not found"}
+
+    reporter, _ = users_database.get_document(reporter_email)
+    if reporter is None:
+        return {"success": False, "message": "User not found"}
+
+    if event.get("owner_email") == reporter_email:
+        return {"success": False, "message": "You cannot report your own event"}
+
+    reason = _normalize_report_reason(reason)
+    report_id = f"{event_id}:{reporter_email}"
+    existing_report, _ = reports_database.get_document(report_id)
+    if existing_report is not None:
+        return {"success": True, "message": "Report already submitted", "already_reported": True, "report": existing_report}
+
+    report = {
+        "id": report_id,
+        "event_id": event_id,
+        "event_title": event.get("title", ""),
+        "event_owner_email": event.get("owner_email", ""),
+        "reporter_email": reporter_email,
+        "reporter_role": reporter.get("role", "user"),
+        "reason": reason,
+        "status": "open",
+        "created_at": datetime.utcnow().isoformat(),
+    }
+    reports_database.set_document(report_id, report)
+    return {"success": True, "message": "Report submitted", "already_reported": False, "report": report}
+
+def get_event_report(event_id: str, reporter_email: str):
+    report_id = f"{event_id}:{reporter_email}"
+    report, _ = reports_database.get_document(report_id)
+    if report is None:
+        return {"success": True, "exists": False}
+
+    return {"success": True, "exists": True, "report": report}
+
+def get_admin_report_summaries(admin_email: str):
+    if not _is_admin(admin_email):
+        return {"success": False, "message": "Admin access required"}
+
+    summaries = []
+    for event_id, reports in _group_reports_by_event().items():
+        summary = _build_report_summary(event_id, reports)
+        if summary:
+            summaries.append(summary)
+
+    summaries.sort(key=lambda item: (item.get("total_reports", 0), item.get("latest_reported_at", "")), reverse=True)
+    return {"success": True, "reports": summaries}
+
+def get_admin_report_detail(admin_email: str, event_id: str):
+    if not _is_admin(admin_email):
+        return {"success": False, "message": "Admin access required"}
+
+    reports = _group_reports_by_event().get(event_id, [])
+    summary = _build_report_summary(event_id, reports)
+    if summary is None:
+        return {"success": False, "message": "This report no longer exists"}
+
+    reporters = []
+    for report in sorted(reports, key=_report_sort_key, reverse=True):
+        reporters.append({
+            "email": report.get("reporter_email", ""),
+            "role": report.get("reporter_role", "user"),
+            "reason": report.get("reason", ""),
+            "created_at": report.get("created_at", ""),
+        })
+
+    return {"success": True, "report": {**summary, "reporters": reporters}}
+
+def resolve_admin_report(admin_email: str, event_id: str):
+    if not _is_admin(admin_email):
+        return {"success": False, "message": "Admin access required"}
+
+    reports = _group_reports_by_event().get(event_id, [])
+    if not reports:
+        return {"success": False, "message": "This report no longer exists"}
+
+    removed_reports = _remove_reports_for_event(event_id)
+    return {"success": True, "message": "Report resolved", "resolved_count": removed_reports}
+
+def remove_reported_event(admin_email: str, event_id: str, remove_hoster: bool = False):
+    if not _is_admin(admin_email):
+        return {"success": False, "message": "Admin access required"}
+
+    reports = _group_reports_by_event().get(event_id, [])
+    if not reports:
+        return {"success": False, "message": "This report no longer exists"}
+
+    event, _ = events_database.get_document(event_id)
+
+    owner_email = ""
+    if isinstance(event, dict):
+        owner_email = event.get("owner_email", "")
+        if remove_hoster:
+            owner, _ = users_database.get_document(owner_email)
+            if isinstance(owner, dict) and owner.get("role") == "admin":
+                return {"success": False, "message": "You cannot remove the hoster role from an admin account"}
+
+        deletion_result = delete_event(event_id, admin_email)
+        if not deletion_result.get("success"):
+            return deletion_result
+
+        if remove_hoster and owner_email:
+            owner, _ = users_database.get_document(owner_email)
+            if isinstance(owner, dict) and owner.get("role") == "hoster":
+                owner["role"] = "user"
+                owner["organization"] = ""
+                users_database.set_document(owner_email, owner)
+
+    removed_reports = _remove_reports_for_event(event_id)
+    return {
+        "success": True,
+        "message": "Event and reports removed",
+        "removed_reports": removed_reports,
+        "hoster_removed": bool(remove_hoster),
+    }
+
 # Initialize
 __all__ = [
     "create_event",
@@ -495,4 +692,10 @@ __all__ = [
     "unattend_event",
     "update_event",
     "delete_event",
+    "report_event",
+    "get_event_report",
+    "get_admin_report_summaries",
+    "get_admin_report_detail",
+    "resolve_admin_report",
+    "remove_reported_event",
 ]

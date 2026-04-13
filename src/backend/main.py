@@ -4,7 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
 from modules.user import sign_up, sign_in, get_profile, update_profile, delete_account, submit_host_request, get_host_requests, approve_host_request, deny_host_request, get_admin_users, remove_hoster
-from modules.events import create_event, get_events_by_host, get_all_events, get_recommended_events, get_event, get_event_attendees, attend_event, unattend_event, update_event, delete_event
+from modules.events import create_event, get_events_by_host, get_all_events, get_recommended_events, get_event, get_event_attendees, attend_event, unattend_event, update_event, delete_event, report_event, get_event_report, get_admin_report_summaries, get_admin_report_detail, resolve_admin_report, remove_reported_event
 
 # Variables
 app = FastAPI()
@@ -64,6 +64,10 @@ class RemoveRequest(BaseModel):
 
 class AttendRequest(BaseModel):
     email: str
+
+class ReportEventRequest(BaseModel):
+    reporter_email: str
+    reason: str
 
 # Functions
 @app.get("/")
@@ -241,6 +245,55 @@ def events_update(event_id: str, body: UpdateEventRequest):
 def events_delete(event_id: str, owner_email: str):
     try:
         return delete_event(event_id, owner_email)
+    except ValueError as e:
+        return {"success": False, "message": str(e)}
+
+@app.post("/events/{event_id}/report")
+def events_report(event_id: str, body: ReportEventRequest):
+    try:
+        return report_event(event_id, body.reporter_email, body.reason)
+    except ValueError as e:
+        return {"success": False, "message": str(e)}
+
+@app.get("/events/{event_id}/report")
+def events_report_status(event_id: str, reporter_email: str):
+    try:
+        return get_event_report(event_id, reporter_email)
+    except ValueError as e:
+        return {"success": False, "message": str(e)}
+
+@app.get("/admin/reports")
+def admin_reports(email: str):
+    try:
+        return get_admin_report_summaries(email)
+    except ValueError as e:
+        return {"success": False, "message": str(e)}
+
+@app.get("/admin/reports/{event_id}")
+def admin_report_detail(event_id: str, email: str):
+    try:
+        return get_admin_report_detail(email, event_id)
+    except ValueError as e:
+        return {"success": False, "message": str(e)}
+
+@app.post("/admin/reports/{event_id}/resolve")
+def admin_report_resolve(event_id: str, body: RemoveRequest):
+    try:
+        return resolve_admin_report(body.email, event_id)
+    except ValueError as e:
+        return {"success": False, "message": str(e)}
+
+@app.post("/admin/reports/{event_id}/remove-event")
+def admin_report_remove_event(event_id: str, body: RemoveRequest):
+    try:
+        return remove_reported_event(body.email, event_id, remove_hoster=False)
+    except ValueError as e:
+        return {"success": False, "message": str(e)}
+
+@app.post("/admin/reports/{event_id}/remove-event-hoster")
+def admin_report_remove_event_hoster(event_id: str, body: RemoveRequest):
+    try:
+        return remove_reported_event(body.email, event_id, remove_hoster=True)
     except ValueError as e:
         return {"success": False, "message": str(e)}
 
