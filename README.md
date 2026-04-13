@@ -8,9 +8,14 @@ Whether you're trying to get more involved this year or just looking to try new 
 
 ## Features
 
-- **Personalized Suggestions:** A machine learning algorithm learns what you like to do and suggests events tailored to your interests.
+- **Personalized Suggestions:** Our machine learning algorithm learns what you like to do and suggests personalized events tailored to your interests.
 - **Location-Based Events:** Find events closest to you and discover what's coming up in your area.
-- **Security in Mind:** Our host verification process ensures every event is legitimate, protecting the community from fraudulent listings and unverified organizers.
+- **Security in Mind:** Our host verification process ensures every event is legitimate, protecting our community from fraudulent listings and unverified organizers.
+
+---
+
+## Other Features
+- **Host and Admin Controls:** Verified hosters can create and manage events, while admins can review reports and moderate event hosts.
 
 ---
 
@@ -68,7 +73,7 @@ Additional information regarding setting up the recommendation engine and classi
 ### Run the Frontend
 
 ```bash
-cd src/frontend/event_web
+cd src/frontend
 npm install
 npm start
 ```
@@ -79,10 +84,17 @@ The app will be available at `http://localhost:3000`.
 
 ```bash
 cd src/backend
-# setup instructions coming soon
+pip install -r requirements.txt
+uvicorn main:app --reload
 ```
 
-Read [REFERENCE.md](REFERENCE.md) if you want to learn how to host your own recommendation/classification engine, otherwise feel free to use our endpoint.
+The backend will be available at `http://localhost:8000`.
+
+### Run the Full Stack
+
+If your VS Code workspace is configured to launch both the React frontend and FastAPI backend together, you can run the full stack by pressing `Run` in VS Code.
+
+Read [REFERENCE.md](REFERENCE.md) if you want to host your own recommendation and classification engine. Otherwise, you can use the default configured endpoint.
 
 ---
 
@@ -93,11 +105,18 @@ Read [REFERENCE.md](REFERENCE.md) if you want to learn how to host your own reco
 | `/` | Landing / Home |
 | `/login` | User login |
 | `/signup` | New user registration |
+| `/onboarding` | Required first-time setup for signed-in users |
 | `/dashboard` | Main app dashboard |
+| `/dashboard/:eventId` | Event details page |
 | `/profile` | User profile |
+| `/create-event` | Create an event |
+| `/edit-event/:eventId` | Edit an event |
+| `/my-events` | Hosted events page |
+| `/report-event/:eventId` | Report an event |
 | `/hostregistration` | Register as an event host |
+| `/host-registeration` | Legacy host registration route kept for compatibility |
+| `/admin` | Admin dashboard |
 | `/about` | About the platform |
-| `/forgotpassword` | Password reset |
 
 ---
 
@@ -105,6 +124,6 @@ Read [REFERENCE.md](REFERENCE.md) if you want to learn how to host your own reco
 
 This is a student group project for **CEN3031**. Please follow the team's branching and PR conventions when contributing.
 
-Made with passion by the students at the Univeristy of Florida. ✨
+Made with passion by the students at the University of Florida.
 
 ---
