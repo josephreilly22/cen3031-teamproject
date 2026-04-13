@@ -603,21 +603,19 @@ function DashboardPage() {
           <div className="events-section-header events-section-header--with-actions">
             <h2 className="events-section-title">All Events</h2>
             <div className="events-sort-group">
-              <button
-                type="button"
-                className={`events-location-btn ${locationEnabled ? 'events-location-btn--active' : ''}`}
-                onClick={handleGetLocation}
-                disabled={locationLoading}
-              >
-                {locationLoading ? (
-                  'Getting location...'
-                ) : (
-                  <>
-                    <span className="events-location-btn-label">Location:</span>
-                    <span className="events-location-btn-state">{locationEnabled ? 'On' : 'Off'}</span>
-                  </>
-                )}
-              </button>
+              <div className={`events-location-control ${locationEnabled ? 'events-location-control--active' : ''} ${locationLoading ? 'events-location-control--disabled' : ''}`}>
+                <span className="events-location-btn-label">Location</span>
+                <button
+                  type="button"
+                  className={`events-location-trigger ${locationLoading ? 'events-location-trigger--loading' : ''}`}
+                  onClick={handleGetLocation}
+                  disabled={locationLoading}
+                >
+                  <span className="events-location-btn-state">
+                    {locationLoading ? '⌛' : (locationEnabled ? 'On' : 'Off')}
+                  </span>
+                </button>
+              </div>
               <div ref={sortMenuRef} className={`events-sort-control ${sortMenuOpen ? 'events-sort-control--open' : ''}`}>
                 <span className="events-sort-label">SORT BY</span>
                 <div className={`events-sort-box ${sortMenuOpen ? 'events-sort-box--open' : ''}`}>
