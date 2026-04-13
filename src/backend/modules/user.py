@@ -1,6 +1,7 @@
 import re
 
 from modules.database import database
+from modules.events import delete_events_for_owner, remove_reports_by_reporter
 
 EMAIL_PATTERN = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
 NAME_MAX_LENGTH = 64
@@ -41,6 +42,26 @@ def _normalize_interests(interests: str):
 
     return trimmed
 
+def _normalize_event_types(event_types):
+    if event_types is None:
+        return []
+
+    if isinstance(event_types, str):
+        event_types = [event_types]
+
+    if not isinstance(event_types, list):
+        raise ValueError("Invalid preference")
+
+    allowed = []
+    for item in event_types:
+        if not isinstance(item, str):
+            continue
+        normalized = item.strip()
+        if normalized in {"on-campus", "off-campus"} and normalized not in allowed:
+            allowed.append(normalized)
+
+    return allowed
+
 def _user_template(first_name: str, last_name: str, email: str, password: str, role: str = "user"):
     return {
         "first_name": first_name,
@@ -49,7 +70,7 @@ def _user_template(first_name: str, last_name: str, email: str, password: str, r
         "password": password,
         "role": role,
         "interests": "",
-        "event_type": "",
+        "event_type": [],
         "onboarding_complete": False,
         "attending_event_ids": [],
     }
@@ -62,6 +83,7 @@ def _user_response(user: dict, email: str):
         "role": user.get("role", "user"),
         "onboarding_complete": bool(user.get("onboarding_complete", False)),
         "attending_event_ids": list(user.get("attending_event_ids", []) or []),
+        "event_type": list(user.get("event_type", []) or []),
     }
 
 def sign_up(first_name: str, last_name: str, email: str, password: str, confirm_password: str):
@@ -116,7 +138,7 @@ def get_profile(email: str):
         "role": user.get("role", "user"),
         "organization": user.get("organization", ""),
         "interests": user.get("interests", ""),
-        "event_type": user.get("event_type", ""),
+        "event_type": list(user.get("event_type", []) or []),
         "onboarding_complete": bool(user.get("onboarding_complete", False)),
         "attending_event_ids": list(user.get("attending_event_ids", []) or []),
     }
@@ -167,8 +189,16 @@ def delete_account(email: str):
     user, _ = users_database.get_document(email)
     if user is None: return {"success": False, "message": "User not found"}
 
+    cleanup = delete_events_for_owner(email)
+    removed_reports = remove_reports_by_reporter(email)
     users_database.remove_document(email)
-    return {"success": True, "message": "Account deleted"}
+    return {
+        "success": True,
+        "message": "Account deleted",
+        "removed_hosted_events": cleanup.get("removed_event_count", 0),
+        "removed_event_reports": cleanup.get("removed_report_count", 0),
+        "removed_report_submissions": removed_reports,
+    }
 
 def get_admin_users():
     admins = []
@@ -207,17 +237,24 @@ def remove_hoster(email: str):
     if user is None: return {"success": False, "message": "User not found"}
     if user.get("role") != "hoster": return {"success": False, "message": "User is not a hoster"}
 
+    cleanup = delete_events_for_owner(email)
     user["role"] = "user"
     user["organization"] = ""
     users_database.set_document(email, user)
-    return {"success": True, "message": "Hoster removed", "role": "user"}
+    return {
+        "success": True,
+        "message": "Hoster removed",
+        "role": "user",
+        "removed_hosted_events": cleanup.get("removed_event_count", 0),
+        "removed_event_reports": cleanup.get("removed_report_count", 0),
+    }
 
 def update_profile(
     email: str,
     first_name: str,
     last_name: str,
     interests: str,
-    event_type: str,
+    event_type,
     password: str = "",
     confirm_password: str = "",
     onboarding_complete: bool | None = None,
@@ -227,7 +264,8 @@ def update_profile(
     last_name = _validate_name(last_name, "last_name")
     interests = _normalize_interests(interests)
 
-    if event_type not in {"on-campus", "off-campus", "both"}: return {"success": False, "message": "Invalid preference"}
+    event_type = _normalize_event_types(event_type)
+    if not event_type: return {"success": False, "message": "Invalid preference"}
 
     user, _ = users_database.get_document(email)
     if user is None: return {"success": False, "message": "User not found"}

@@ -38,6 +38,7 @@ class CreateEventRequest(BaseModel):
     location: str
     location_types: list[str]
     description: str
+    coordinates: list[float] | None = None
 
 class UpdateEventRequest(BaseModel):
     owner_email: str
@@ -48,13 +49,14 @@ class UpdateEventRequest(BaseModel):
     location: str
     location_types: list[str]
     description: str
+    coordinates: list[float] | None = None
 
 class UpdateProfileRequest(BaseModel):
     email: str
     first_name: str
     last_name: str
     interests: str
-    event_type: str
+    event_type: list[str] | str
     password: str = ""
     confirm_password: str = ""
     onboarding_complete: bool | None = None
@@ -171,6 +173,7 @@ def events_create(body: CreateEventRequest):
             body.location,
             body.location_types,
             body.description,
+            body.coordinates,
         )
     except ValueError as e:
         return {"success": False, "message": str(e)}
@@ -237,6 +240,7 @@ def events_update(event_id: str, body: UpdateEventRequest):
             body.location,
             body.location_types,
             body.description,
+            body.coordinates,
         )
     except ValueError as e:
         return {"success": False, "message": str(e)}
