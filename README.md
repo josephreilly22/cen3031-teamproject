@@ -94,7 +94,7 @@ Model used:
 - [keisuke-miyako/all-MiniLM-L6-v2-onnx-fp16](https://huggingface.co/keisuke-miyako/all-MiniLM-L6-v2-onnx-fp16): An optimized version of the MiniLM embedding model used for semantic similarity between event descriptions and user interests
 - [MoritzLaurer/ModernBERT-base-zeroshot-v2.0](https://huggingface.co/MoritzLaurer/ModernBERT-base-zeroshot-v2.0): a ModernBERT-based zero-shot classification model designed for fast and efficient classification
 
-Additional information regarding setting up the recommendation engine and classification engine are located in [REFERENCE.md](REFERENCE.md).
+Additional information regarding setting up the recommendation engine and classification engine are located in [DOCS.md](DOCS.md).
 
 ---
 
@@ -151,7 +151,7 @@ For Koyeb specifically, prefer the repository root `Dockerfile` instead of Build
 
 If your VS Code workspace is configured to launch both the React frontend and FastAPI backend together, you can run the full stack by pressing `Run` in VS Code.
 
-Read [REFERENCE.md](REFERENCE.md) if you want to host your own recommendation and classification engine. Otherwise, you can use the default configured endpoint.
+Read [DOCS.md](DOCS.md) if you want to host your own recommendation and classification engine. Otherwise, you can use the default configured endpoint.
 
 ---
 
