@@ -4,7 +4,7 @@ ENV CI=false
 
 WORKDIR /app/src/frontend
 COPY src/frontend/package.json src/frontend/package-lock.json ./
-RUN npm ci
+RUN npm install
 COPY src/frontend/ ./
 RUN npm run build
 
