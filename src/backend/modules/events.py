@@ -190,8 +190,7 @@ def _normalize_diversity_threshold(value):
         diversity = 0.2
 
     diversity = max(-1.0, min(1.0, diversity))
-    threshold = 0.15 + (diversity * 0.25)
-    return max(0.1, min(0.4, threshold))
+    return 0.15 + (diversity * 0.25)
 
 def _normalize_attendee_emails(attendee_emails):
     if not isinstance(attendee_emails, list):

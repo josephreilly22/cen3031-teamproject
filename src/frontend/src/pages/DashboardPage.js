@@ -256,8 +256,7 @@ function DashboardPage() {
   ];
   const getAiScoreThreshold = (value) => {
     const normalized = Math.max(-1, Math.min(1, Number(value)));
-    const threshold = 0.15 + (normalized * 0.25);
-    return Math.max(0.1, Math.min(0.4, threshold));
+    return 0.15 + (normalized * 0.25);
   };
 
   useEffect(() => {
