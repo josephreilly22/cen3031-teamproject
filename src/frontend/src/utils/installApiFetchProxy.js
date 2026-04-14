@@ -1,4 +1,5 @@
 import { getApiBaseUrl } from './api';
+import { clearAuthSession } from './authSession';
 
 const LOCAL_API_ORIGIN = 'http://localhost:8000';
 
@@ -12,20 +13,35 @@ export function installApiFetchProxy() {
   window.fetch = (input, init) => {
     const apiBaseUrl = getApiBaseUrl();
 
+    let fetchUrl = input;
     if (typeof input === 'string') {
-      const nextInput = input.startsWith(LOCAL_API_ORIGIN)
+      fetchUrl = input.startsWith(LOCAL_API_ORIGIN)
         ? `${apiBaseUrl}${input.slice(LOCAL_API_ORIGIN.length)}`
         : input;
-      return originalFetch(nextInput, init);
+    } else if (input instanceof Request && input.url.startsWith(LOCAL_API_ORIGIN)) {
+      fetchUrl = `${apiBaseUrl}${input.url.slice(LOCAL_API_ORIGIN.length)}`;
     }
 
-    if (input instanceof Request && input.url.startsWith(LOCAL_API_ORIGIN)) {
-      const nextUrl = `${apiBaseUrl}${input.url.slice(LOCAL_API_ORIGIN.length)}`;
-      const nextRequest = new Request(nextUrl, input);
-      return originalFetch(nextRequest, init);
-    }
+    const fetchRequest = typeof input === 'string' 
+      ? originalFetch(fetchUrl, init)
+      : input instanceof Request 
+        ? originalFetch(new Request(fetchUrl, input), init)
+        : originalFetch(input, init);
 
-    return originalFetch(input, init);
+    return fetchRequest.then((response) => {
+      const clonedResponse = response.clone();
+      clonedResponse.json()
+        .then((data) => {
+          if (data && data.success === false && data.message === 'User not found') {
+            clearAuthSession();
+            window.location.href = '/login';
+          }
+        })
+        .catch(() => {});
+      return response;
+    }).catch((error) => {
+      throw error;
+    });
   };
 
   window.__apiFetchProxyInstalled = true;

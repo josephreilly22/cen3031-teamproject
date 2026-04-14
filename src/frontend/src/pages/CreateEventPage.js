@@ -23,12 +23,22 @@ function CreateEventPage() {
     return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
   };
 
+  const formatDateTimeUTC = (date) => {
+    const pad = (value) => String(value).padStart(2, '0');
+    return `${date.getUTCFullYear()}-${pad(date.getUTCMonth() + 1)}-${pad(date.getUTCDate())}T${pad(date.getUTCHours())}:${pad(date.getUTCMinutes())}`;
+  };
+
   const localDateTimeToUTC = (localDateTimeStr) => {
     if (!localDateTimeStr) return '';
-    const local = new Date(localDateTimeStr);
-    if (Number.isNaN(local.getTime())) return localDateTimeStr;
-    const utc = new Date(local.getTime() - local.getTimezoneOffset() * 60000);
-    return formatDateTimeLocal(utc);
+    // Create a Date interpreting the string as local time
+    const [datePart, timePart] = localDateTimeStr.split('T');
+    const [year, month, day] = datePart.split('-').map(Number);
+    const [hours, minutes] = (timePart || '00:00').split(':').map(Number);
+    const localDate = new Date(year, month - 1, day, hours, minutes, 0);
+    if (Number.isNaN(localDate.getTime())) return localDateTimeStr;
+    // Convert local to UTC by adding the timezone offset
+    const utcDate = new Date(localDate.getTime() + localDate.getTimezoneOffset() * 60000);
+    return formatDateTimeUTC(utcDate);
   };
 
   const getCurrentDateTime = () => formatDateTimeLocal(new Date());
