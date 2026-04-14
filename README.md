@@ -107,6 +107,8 @@ Then copy `src/frontend/build` to `src/backend/frontend_build` before starting t
 
 When the frontend build is present, `GET /` returns the React app. If no build is present, the backend falls back to the JSON health response.
 
+For Koyeb specifically, prefer the repository root `Dockerfile` instead of Buildpacks. The frontend and backend live in separate directories, and the Dockerfile builds both into one image without relying on cross-directory build commands.
+
 ### Run the Full Stack
 
 If your VS Code workspace is configured to launch both the React frontend and FastAPI backend together, you can run the full stack by pressing `Run` in VS Code.
