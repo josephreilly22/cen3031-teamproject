@@ -373,7 +373,6 @@ function CreateEventPage() {
               type="datetime-local"
               name="date"
               className={!startTouched ? 'ce-input-placeholder-state' : ''}
-              min={currentMinDateTime}
               value={displayedStartDate}
               onChange={handleChange}
               required
