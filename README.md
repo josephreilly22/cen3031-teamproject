@@ -56,6 +56,9 @@ Visit our deployment demo at [https://eventplanner8.koyeb.app/](https://eventpla
 ![Admin dashboard page](docs/12.png)
 *Figure 12. Admin dashboard page.*
 
+![Admin dashboard reports page](docs/13.png)
+*Figure 13. Admin dashboard reports page.*
+
 ---
 
 ## Tech Stack
