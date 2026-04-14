@@ -87,6 +87,26 @@ uvicorn main:app --reload
 
 The backend will be available at `http://localhost:8000`.
 
+### Hybrid Deployment
+
+The backend can also serve the built frontend in production. This is the setup used for a single-service deployment such as Koyeb.
+
+Build the frontend, copy the build output into the backend, and then start FastAPI:
+
+```bash
+cd src/frontend
+npm install
+npm run build
+```
+
+Then copy `src/frontend/build` to `src/backend/frontend_build` before starting the backend. On deployment platforms, set:
+
+- `WORKDIR` to `src/backend`
+- `RUN COMMAND` to `uvicorn main:app --host 0.0.0.0 --port $PORT`
+- `PING_DOMAIN` to your public app URL, such as `https://eventplanner8.koyeb.app/`
+
+When the frontend build is present, `GET /` returns the React app. If no build is present, the backend falls back to the JSON health response.
+
 ### Run the Full Stack
 
 If your VS Code workspace is configured to launch both the React frontend and FastAPI backend together, you can run the full stack by pressing `Run` in VS Code.

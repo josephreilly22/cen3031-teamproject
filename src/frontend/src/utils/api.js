@@ -12,7 +12,7 @@ export function getApiBaseUrl() {
     if (localHosts.has(hostname)) {
       return LOCAL_API_ORIGIN;
     }
-    return `${protocol}//${hostname}:8000`;
+    return `${protocol}//${hostname}`;
   }
 
   return LOCAL_API_ORIGIN;

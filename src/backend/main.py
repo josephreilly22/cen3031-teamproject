@@ -2,10 +2,13 @@
 import os
 import threading
 import time
+from pathlib import Path
 from urllib.request import urlopen
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
 from modules.user import sign_up, sign_in, get_profile, update_profile, delete_account, submit_host_request, get_host_requests, approve_host_request, deny_host_request, get_admin_users, remove_hoster
@@ -13,6 +16,17 @@ from modules.events import create_event, get_events_by_host, get_all_events, get
 
 # Variables
 app = FastAPI()
+BASE_DIR = Path(__file__).resolve().parent
+FRONTEND_BUILD_DIR = Path(os.getenv("FRONTEND_BUILD_DIR", "")).expanduser()
+if not FRONTEND_BUILD_DIR:
+    FRONTEND_BUILD_DIR = BASE_DIR / "frontend_build"
+if not FRONTEND_BUILD_DIR.exists():
+    candidate = BASE_DIR.parent / "frontend" / "build"
+    if candidate.exists():
+        FRONTEND_BUILD_DIR = candidate
+STATIC_DIR = FRONTEND_BUILD_DIR / "static"
+if STATIC_DIR.exists():
+    app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
 
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_credentials=False, allow_methods=["*"], allow_headers=["*"])
 
@@ -79,7 +93,11 @@ class ReportEventRequest(BaseModel):
 
 # Functions
 @app.get("/")
-def root(): return {"status": "ok"}
+def root():
+    index_file = FRONTEND_BUILD_DIR / "index.html"
+    if index_file.exists():
+        return FileResponse(index_file)
+    return {"status": "ok"}
 
 @app.post("/signup")
 def signup(body: SignUpRequest):
@@ -307,6 +325,21 @@ def admin_report_remove_event_hoster(event_id: str, body: RemoveRequest):
         return remove_reported_event(body.email, event_id, remove_hoster=True)
     except ValueError as e:
         return {"success": False, "message": str(e)}
+
+
+@app.get("/{path:path}")
+def serve_frontend(path: str):
+    if path.startswith(("signup", "login", "host-registration", "admin", "account", "profile", "events")):
+        return {"detail": "Not found"}
+
+    index_file = FRONTEND_BUILD_DIR / "index.html"
+    if index_file.exists():
+        requested_file = FRONTEND_BUILD_DIR / path
+        if requested_file.exists() and requested_file.is_file():
+            return FileResponse(requested_file)
+        return FileResponse(index_file)
+
+    return {"detail": "Frontend build not found"}
 
 # Initialize
 
