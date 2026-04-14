@@ -205,7 +205,6 @@ function CreateEventPage() {
       ...previousForm,
       date: '',
       end_date: '',
-      location_types: [],
     }));
     setCoordinates(null);
     setCoordinatesError('');

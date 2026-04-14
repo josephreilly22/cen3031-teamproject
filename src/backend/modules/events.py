@@ -1,6 +1,6 @@
 # Imports
 import uuid
-from datetime import datetime
+from datetime import datetime, timezone
 from modules.database import database
 from modules.engine import give_recommendation
 
@@ -22,8 +22,14 @@ _last_event_purge_at = None
 # Functions
 def _parse_event_datetime(date: str):
     try:
-        return datetime.fromisoformat(date)
-    except ValueError:
+        # Accept ISO strings with 'Z' or offsets and normalize to naive UTC
+        if isinstance(date, str) and date.endswith('Z'):
+            date = date[:-1] + '+00:00'
+        dt = datetime.fromisoformat(date)
+        if dt.tzinfo is not None:
+            dt = dt.astimezone(timezone.utc).replace(tzinfo=None)
+        return dt
+    except Exception:
         raise ValueError("Invalid event date and time")
 
 def _same_event_minute(first_date: str, second_date: str):
@@ -245,7 +251,7 @@ def _attendee_payload(user: dict, email: str):
 def _purge_expired_events():
     global _last_event_purge_at
 
-    now = datetime.now()
+    now = datetime.utcnow()
     if _last_event_purge_at is not None and (now - _last_event_purge_at).total_seconds() < EVENT_PURGE_INTERVAL_SECONDS:
         return
 
