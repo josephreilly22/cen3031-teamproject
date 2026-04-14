@@ -17,13 +17,18 @@ from modules.events import create_event, get_events_by_host, get_all_events, get
 # Variables
 app = FastAPI()
 BASE_DIR = Path(__file__).resolve().parent
-FRONTEND_BUILD_DIR = Path(os.getenv("FRONTEND_BUILD_DIR", "")).expanduser()
-if not FRONTEND_BUILD_DIR:
-    FRONTEND_BUILD_DIR = BASE_DIR / "frontend_build"
+frontend_build_dir_env = os.getenv("FRONTEND_BUILD_DIR", "").strip()
+FRONTEND_BUILD_DIR = Path(frontend_build_dir_env).expanduser() if frontend_build_dir_env else BASE_DIR / "frontend_build"
+if not FRONTEND_BUILD_DIR.exists():
+    candidate = BASE_DIR / "frontend_build"
+    if candidate.exists():
+        FRONTEND_BUILD_DIR = candidate
 if not FRONTEND_BUILD_DIR.exists():
     candidate = BASE_DIR.parent / "frontend" / "build"
     if candidate.exists():
         FRONTEND_BUILD_DIR = candidate
+if not FRONTEND_BUILD_DIR.exists() and frontend_build_dir_env:
+    FRONTEND_BUILD_DIR = BASE_DIR / "frontend_build"
 STATIC_DIR = FRONTEND_BUILD_DIR / "static"
 if STATIC_DIR.exists():
     app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
