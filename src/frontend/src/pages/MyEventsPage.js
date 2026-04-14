@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../styles/MyEventsPage.css';
-import SignedInNavbar from '../components/SignedInNavbar';
+import LoggedInNavbar from '../components/LoggedInNavbar';
 import OverflowTitle from '../components/OverflowTitle';
 import { getAuthSession } from '../utils/authSession';
 
@@ -178,7 +178,7 @@ function MyEventsPage() {
 
   return (
     <div className="my-events-page">
-      <SignedInNavbar title="My Events" actionLabel="Dashboard" actionPath="/dashboard" />
+      <LoggedInNavbar title="My Events" actionLabel="Dashboard" actionPath="/dashboard" />
 
       <main className="my-events-content">
         <div className="my-events-header">

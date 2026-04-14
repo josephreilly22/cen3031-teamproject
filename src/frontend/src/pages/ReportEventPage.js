@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import '../styles/CreateEventPage.css';
-import SignedInNavbar from '../components/SignedInNavbar';
+import LoggedInNavbar from '../components/LoggedInNavbar';
 import { getAuthSession } from '../utils/authSession';
 
 const REPORT_REASONS = [
@@ -96,7 +96,7 @@ function ReportEventPage() {
 
     return (
       <div className="create-event-page">
-        <SignedInNavbar title="Report Event" actionLabel="Dashboard" actionPath="/dashboard" />
+        <LoggedInNavbar title="Report Event" actionLabel="Dashboard" actionPath="/dashboard" />
 
         <main className="create-event-content report-event-content">
           <div className="create-event-success report-success-box">
@@ -122,7 +122,7 @@ function ReportEventPage() {
 
   return (
     <div className="create-event-page">
-      <SignedInNavbar title="Report Event" actionLabel="Dashboard" actionPath="/dashboard" />
+      <LoggedInNavbar title="Report Event" actionLabel="Dashboard" actionPath="/dashboard" />
 
       <main className="create-event-content report-event-content">
         <button type="button" className="report-back-btn" onClick={() => navigate(`/dashboard/${encodeURIComponent(eventId)}`)}>

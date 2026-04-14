@@ -3,7 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import '../styles/OnboardingPage.css';
 import '../styles/ProfilePage.css';
 import '../styles/SignupPage.css';
-import SignedInNavbar from '../components/SignedInNavbar';
+import LoggedInNavbar from '../components/LoggedInNavbar';
 import { getAuthSession, clearAuthSession, setAuthSession, setOnboardingState, setUserName, setUserRole } from '../utils/authSession';
 import { applyCharacterLimit, getEffectiveCharacterCount } from '../utils/textInput';
 
@@ -317,7 +317,7 @@ function ProfilePage() {
 
   return (
     <div className="onboarding">
-      <SignedInNavbar
+      <LoggedInNavbar
         title="Profile"
         actionLabel="Dashboard"
         actionPath="/dashboard"
@@ -341,7 +341,7 @@ function ProfilePage() {
                   Save Changes
                 </button>
                 <button className="profile-signout-btn" onClick={handleSignOut}>
-                  Sign Out
+                  Log Out
                 </button>
               </div>
             </div>

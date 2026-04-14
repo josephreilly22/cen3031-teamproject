@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import '../styles/OnboardingPage.css';
 import '../styles/ProfilePage.css';
 import '../styles/SignupPage.css';
-import SignedInNavbar from '../components/SignedInNavbar';
+import LoggedInNavbar from '../components/LoggedInNavbar';
 import { getAuthSession, setOnboardingState } from '../utils/authSession';
 import { applyCharacterLimit, getEffectiveCharacterCount } from '../utils/textInput';
 
@@ -113,7 +113,7 @@ function OnboardingPage() {
 
   return (
     <div className="onboarding">
-      <SignedInNavbar title="Onboarding" />
+      <LoggedInNavbar title="Onboarding" />
 
       <main className="onboarding-content">
         <div className="onboarding-header">

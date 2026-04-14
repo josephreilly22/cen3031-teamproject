@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import '../styles/CreateEventPage.css';
-import SignedInNavbar from '../components/SignedInNavbar';
+import LoggedInNavbar from '../components/LoggedInNavbar';
 import { getAuthSession } from '../utils/authSession';
 import { applyCharacterLimit, getEffectiveCharacterCount } from '../utils/textInput';
 
@@ -353,7 +353,7 @@ function EditEventPage() {
 
   return (
     <div className="create-event-page">
-      <SignedInNavbar
+      <LoggedInNavbar
         title="Edit Event"
         actionLabel="Dashboard"
         actionPath="/dashboard"

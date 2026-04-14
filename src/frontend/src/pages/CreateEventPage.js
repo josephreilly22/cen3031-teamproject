@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../styles/CreateEventPage.css';
-import SignedInNavbar from '../components/SignedInNavbar';
+import LoggedInNavbar from '../components/LoggedInNavbar';
 import { getAuthSession } from '../utils/authSession';
 import { applyCharacterLimit, getEffectiveCharacterCount } from '../utils/textInput';
 
@@ -275,7 +275,7 @@ function CreateEventPage() {
   if (submitted) {
     return (
       <div className="create-event-page">
-        <SignedInNavbar title="Create Event" actionLabel="Dashboard" actionPath="/dashboard" />
+        <LoggedInNavbar title="Create Event" actionLabel="Dashboard" actionPath="/dashboard" />
         <main className="create-event-content">
           <div className="create-event-success">
             <span className="create-event-success-icon">🎉</span>
@@ -316,7 +316,7 @@ function CreateEventPage() {
 
   return (
     <div className="create-event-page">
-      <SignedInNavbar title="Create Event" actionLabel="Dashboard" actionPath="/dashboard" />
+      <LoggedInNavbar title="Create Event" actionLabel="Dashboard" actionPath="/dashboard" />
 
       <main className="create-event-content">
         <div className="create-event-header">

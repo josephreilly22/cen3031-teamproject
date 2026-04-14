@@ -18,7 +18,7 @@ class SignUpRequest(BaseModel):
     password: str
     confirm_password: str
 
-class SignInRequest(BaseModel):
+class LoginRequest(BaseModel):
     email: str
     password: str
 
@@ -84,7 +84,7 @@ def signup(body: SignUpRequest):
         return {"success": False, "message": str(e)}
 
 @app.post("/login")
-def login(body: SignInRequest):
+def login(body: LoginRequest):
     try:
         return sign_in(body.email, body.password)
     except ValueError as e:

@@ -45,7 +45,7 @@ function SiteNavbar({
 
   const resolvedSecondaryLabel = session.signedIn
     ? (secondaryLabel === undefined ? 'Dashboard' : secondaryLabel)
-    : (secondaryLabel === undefined ? 'Sign In' : secondaryLabel);
+    : (secondaryLabel === undefined ? 'Log In' : secondaryLabel);
   const resolvedSecondaryPath = session.signedIn
     ? (secondaryPath === undefined
         ? (session.onboardingComplete ? '/dashboard' : '/onboarding')

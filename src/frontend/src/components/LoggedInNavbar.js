@@ -3,7 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import '../styles/DashboardPage.css';
 import { getAuthSession, setOnboardingState, setUserRole } from '../utils/authSession';
 
-function SignedInNavbar({ title, actionLabel, actionPath, actions, onBeforeNavigate, onBeforeLogout }) {
+function LoggedInNavbar({ title, actionLabel, actionPath, actions, onBeforeNavigate, onBeforeLogout }) {
   const NAVBAR_TITLE_GAP_PX = 40;
   const NAVBAR_MASK_BUFFER_PX = 28;
   const NAVBAR_MIN_SHELL_WIDTH_PX = 180;
@@ -332,4 +332,4 @@ function SignedInNavbar({ title, actionLabel, actionPath, actions, onBeforeNavig
   );
 }
 
-export default SignedInNavbar;
+export default LoggedInNavbar;

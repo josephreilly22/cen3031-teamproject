@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import '../styles/EventDetailsPage.css';
 import '../styles/DashboardPage.css';
-import SignedInNavbar from '../components/SignedInNavbar';
+import LoggedInNavbar from '../components/LoggedInNavbar';
 import { getAuthSession } from '../utils/authSession';
 
 const LOCATION_ENABLED_KEY = 'eventplanner.locationEnabled';
@@ -365,7 +365,7 @@ function EventDetailsPage() {
 
   return (
     <div className="event-details-page">
-      <SignedInNavbar title="Event" actionLabel="Dashboard" actionPath="/dashboard" />
+      <LoggedInNavbar title="Event" actionLabel="Dashboard" actionPath="/dashboard" />
 
       <main className="event-details-content">
         <button type="button" className="event-back-btn" onClick={() => navigate('/dashboard')}>

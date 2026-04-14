@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../styles/AdminDashboard.css';
-import SignedInNavbar from '../components/SignedInNavbar';
+import LoggedInNavbar from '../components/LoggedInNavbar';
 import { getAuthSession } from '../utils/authSession';
 
 function AdminDashboard() {
@@ -182,7 +182,7 @@ function AdminDashboard() {
 
   return (
     <div className="admin-dashboard">
-      <SignedInNavbar title="Admin Dashboard" actionLabel="Dashboard" actionPath="/dashboard" />
+      <LoggedInNavbar title="Admin Dashboard" actionLabel="Dashboard" actionPath="/dashboard" />
 
       <main className="admin-content">
         <div className="admin-header">

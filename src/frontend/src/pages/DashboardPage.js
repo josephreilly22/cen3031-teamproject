@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../styles/DashboardPage.css';
-import SignedInNavbar from '../components/SignedInNavbar';
+import LoggedInNavbar from '../components/LoggedInNavbar';
 import OverflowTitle from '../components/OverflowTitle';
 import { getAuthSession } from '../utils/authSession';
 
@@ -62,6 +62,18 @@ function formatDistanceLabel(distanceMiles) {
   return `${distanceMiles.toFixed(distanceMiles >= 10 ? 0 : 1)} mi`;
 }
 
+function isEventLiveNow(start, end, now = new Date()) {
+  const startTime = start ? new Date(start) : null;
+  const endTime = end ? new Date(end) : null;
+
+  return Boolean(
+    startTime &&
+    !Number.isNaN(startTime.getTime()) &&
+    startTime <= now &&
+    (!endTime || Number.isNaN(endTime.getTime()) || endTime >= now)
+  );
+}
+
 function EventTile({ event, attending, hosting, userLocation, locationEnabled }) {
   const navigate = useNavigate();
   const titleText = event.title || '';
@@ -118,21 +130,8 @@ function EventTile({ event, attending, hosting, userLocation, locationEnabled })
     return labels.join(', ');
   };
 
-  const isEventLive = (start, end) => {
-    const now = new Date();
-    const startTime = start ? new Date(start) : null;
-    const endTime = end ? new Date(end) : null;
-
-    return Boolean(
-      startTime &&
-      !Number.isNaN(startTime.getTime()) &&
-      startTime <= now &&
-      (!endTime || Number.isNaN(endTime.getTime()) || endTime >= now)
-    );
-  };
-
   const { startLabel, endLabel } = formatEventWindow(event.date, event.end_date);
-  const live = isEventLive(event.date, event.end_date);
+  const live = isEventLiveNow(event.date, event.end_date);
   const campusLabel = formatLocationTypes(event.location_types);
   const cardDescription = formatCardDescription(event.description);
   const eventCoordinates = Array.isArray(event.coordinates) && event.coordinates.length === 2
@@ -244,8 +243,10 @@ function DashboardPage() {
   const [userLocation, setUserLocation] = useState(null);
   const [locationUpdatedAt, setLocationUpdatedAt] = useState(null);
   const [aiBadgeJustActivated, setAiBadgeJustActivated] = useState(false);
+  const [liveCheckTick, setLiveCheckTick] = useState(() => Date.now());
   const sortMenuRef = useRef(null);
   const previousHasActiveAiSuggestionsRef = useRef(false);
+  const previousRelevantLiveStateRef = useRef({});
 
   const sortOptions = [
     { value: 'start-time', label: 'Start Time' },
@@ -378,6 +379,14 @@ function DashboardPage() {
     return () => window.clearInterval(intervalId);
   }, [locationEnabled]);
 
+  useEffect(() => {
+    const intervalId = window.setInterval(() => {
+      setLiveCheckTick(Date.now());
+    }, 15000);
+
+    return () => window.clearInterval(intervalId);
+  }, []);
+
   const compareStartTime = (firstEvent, secondEvent) => {
     const firstTime = new Date(firstEvent.date || 0).getTime();
     const secondTime = new Date(secondEvent.date || 0).getTime();
@@ -494,6 +503,9 @@ function DashboardPage() {
       attendingEventIdSet.has(event.id) || event.owner_email === session.email
     ))
     : sortedAllEvents;
+  const relevantLiveEvents = events.filter((event) => (
+    attendingEventIdSet.has(event.id) || event.owner_email === session.email
+  ));
 
   const hasAiInterests = !loadingProfile && userInterests.length > 0;
   const aiSuggestedIds = new Set(suggestedEvents.map((event) => event.id));
@@ -523,6 +535,42 @@ function DashboardPage() {
 
     return undefined;
   }, [hasActiveAiSuggestions]);
+
+  useEffect(() => {
+    if (loadingEvents || loadingProfile || !relevantLiveEvents.length || typeof window === 'undefined' || !('Notification' in window)) {
+      return;
+    }
+
+    if (Notification.permission === 'default') {
+      Notification.requestPermission().catch(() => {});
+    }
+  }, [loadingEvents, loadingProfile, relevantLiveEvents.length]);
+
+  useEffect(() => {
+    if (loadingEvents || loadingProfile || !relevantLiveEvents.length || typeof window === 'undefined' || !('Notification' in window)) {
+      return;
+    }
+
+    const nextLiveState = {};
+    const now = new Date(liveCheckTick);
+
+    relevantLiveEvents.forEach((event) => {
+      const live = isEventLiveNow(event.date, event.end_date, now);
+      nextLiveState[event.id] = live;
+
+      if (
+        previousRelevantLiveStateRef.current[event.id] === false &&
+        live &&
+        Notification.permission === 'granted'
+      ) {
+        new Notification(`${event.title || 'An event'} is happening!`, {
+          body: event.owner_email === session.email ? 'One of your events is now live.' : 'An event you are attending is now live.',
+        });
+      }
+    });
+
+    previousRelevantLiveStateRef.current = nextLiveState;
+  }, [events, liveCheckTick, loadingEvents, loadingProfile, relevantLiveEvents, session.email]);
 
   if (!session.signedIn || !session.onboardingComplete) {
     return null;
@@ -577,7 +625,7 @@ function DashboardPage() {
 
   return (
     <div className="dashboard">
-      <SignedInNavbar title="Dashboard" actionLabel="Dashboard" actionPath="/dashboard" />
+      <LoggedInNavbar title="Dashboard" actionLabel="Dashboard" actionPath="/dashboard" />
 
       <main className="dashboard-content">
         <section className="dashboard-welcome">

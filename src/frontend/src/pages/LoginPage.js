@@ -68,7 +68,7 @@ function LoginPage() {
           <span className="login-logo-text">EventPlanner8</span>
         </div>
         <h2 className="login-heading">Welcome back</h2>
-        <p className="login-sub">Sign in to your account</p>
+        <p className="login-sub">Log in to your account</p>
 
         {error && <p className="login-error">⚠ {error}</p>}
 
@@ -105,7 +105,7 @@ function LoginPage() {
             />
           </div>
           <button type="submit" className="login-btn" disabled={loading}>
-            {loading ? 'Signing in...' : 'Sign In'}
+            {loading ? 'Logging in...' : 'Log In'}
           </button>
         </form>
 
