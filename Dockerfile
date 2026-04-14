@@ -8,7 +8,7 @@ RUN npm install
 COPY src/frontend/ ./
 RUN npm run build
 
-FROM python:3.13-slim AS runtime
+FROM python:3.12-slim AS runtime
 
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
