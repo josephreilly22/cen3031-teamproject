@@ -45,17 +45,17 @@ function Home() {
           <div className="card">
             <div className="card-icon icon-pink">⭐</div>
             <h3>Personalized Suggestions</h3>
-            <p>Our machine learning algorithm learns what you like to do and suggests personalized events tailored to your interests.</p>
+            <p>Get event suggestions tailored to your interests, so you can quickly find things you actually enjoy.</p>
           </div>
           <div className="card">
             <div className="card-icon icon-blue">📍</div>
             <h3>Location-Based Events</h3>
-            <p>Find events closest to you and discover what&apos;s coming up in your area.</p>
+            <p>See events near you and discover what&apos;s happening around campus and in your local area.</p>
           </div>
           <div className="card">
             <div className="card-icon icon-green">🛡️</div>
             <h3>Security in Mind</h3>
-            <p>Our host verification process ensures every event is legitimate, protecting our community from fraudulent listings and unverified organizers.</p>
+            <p>Verified hosts and active moderation keep listings trustworthy, so the community stays safe and welcoming.</p>
           </div>
         </div>
       </section>

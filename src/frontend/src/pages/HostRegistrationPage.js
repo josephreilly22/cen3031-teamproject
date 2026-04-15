@@ -175,24 +175,24 @@ function HostRegistrationPage() {
             <div className="card-icon icon-blue">📈</div>
             <h3>Increase Attendance</h3>
             <p>
-              Tap into our platform&apos;s audience and reach more attendees than ever before.
-              Our discovery tools put your events in front of the right people at the right time.
+              Reach more people through personalized discovery that helps your events show up
+              for attendees who are most likely to join.
             </p>
           </div>
           <div className="card">
             <div className="card-icon icon-green">🛡️</div>
             <h3>Security in Mind</h3>
             <p>
-              Our host verification process ensures every event is legitimate, protecting your
-              reputation and our community from fraudulent listings and unverified organizers.
+              Verified hosts and active moderation keep listings trustworthy, protecting your
+              reputation while keeping the community safe and welcoming.
             </p>
           </div>
           <div className="card">
             <div className="card-icon icon-pink">🎟️</div>
             <h3>Full Event Control</h3>
             <p>
-              Manage RSVPs, post updates, and customize your event page, all from one intuitive
-              dashboard built with hosts in mind.
+              Track attendance, share updates, and customize your event pages from one clean dashboard
+              built specifically for hosts.
             </p>
           </div>
         </div>

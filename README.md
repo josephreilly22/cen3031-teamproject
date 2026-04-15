@@ -10,9 +10,9 @@ Visit our deployment demo at [https://eventplanner8.koyeb.app/](https://eventpla
 
 ## Features
 
-- **Personalized Suggestions:** Our machine learning algorithm learns what you like to do and suggests personalized events tailored to your interests.
-- **Location-Based Events:** Find events closest to you and discover what's coming up in your area.
-- **Security in Mind:** Our host verification process ensures every event is legitimate, protecting our community from fraudulent listings and unverified organizers.
+- **Personalized Suggestions:** Get event suggestions tailored to your interests, so you can quickly find things you actually enjoy.
+- **Location-Based Events:** See events near you and discover what's happening around campus and in your local area.
+- **Security in Mind:** Verified hosts and active moderation keep listings trustworthy, so the community stays safe and welcoming.
 - **Host and Admin Controls:** Verified hosters can create and manage events, while admins can review reports and moderate event hosts.
 - **Guided Onboarding:** New users complete onboarding to set their interests and event preferences before entering the main dashboard.
 

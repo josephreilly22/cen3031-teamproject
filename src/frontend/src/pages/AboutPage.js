@@ -27,17 +27,17 @@ function AboutPage() {
           <div className="card">
             <div className="card-icon icon-pink">⭐</div>
             <h3>Personalized Suggestions</h3>
-            <p>Our machine learning algorithm learns what you enjoy and surfaces events that actually match your interests, not just what&apos;s nearby.</p>
+            <p>Get event suggestions tailored to your interests, so you can quickly find things you actually enjoy.</p>
           </div>
           <div className="card">
             <div className="card-icon icon-blue">📍</div>
             <h3>Location-Based Events</h3>
-            <p>Discover what&apos;s happening around you. We surface events close to your location so you never miss something great in your area.</p>
+            <p>See events near you and discover what&apos;s happening around campus and in your local area.</p>
           </div>
           <div className="card">
             <div className="card-icon icon-green">🛡️</div>
             <h3>Security in Mind</h3>
-            <p>Every host goes through a verification process. Our moderation system uses AI to keep listings legitimate and our community safe.</p>
+            <p>Verified hosts and active moderation keep listings trustworthy, so the community stays safe and welcoming.</p>
           </div>
         </div>
 
