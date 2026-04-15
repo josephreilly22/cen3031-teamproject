@@ -44,16 +44,24 @@ function AboutPage() {
         <div className="about-section">
           <h2 className="about-heading">How it&apos;s built</h2>
           <p className="about-text">
-            The frontend is built with <strong>React</strong> and <strong>React Router</strong>.
-            The backend runs on <strong>Python</strong> with a <strong>MongoDB</strong> database.
-            Our recommendation engine uses a fine-tuned <strong>MiniLM</strong> embedding model
-            for semantic similarity, while our content moderation leverages a
-            <strong> ModernBERT</strong> zero-shot classifier, both hosted on Hugging Face Spaces
-            and served via Gradio for fast, efficient inference.
+            EventPlanner8 is built with a modern web stack and designed to be simple,
+            fast, and reliable for discovering and hosting local events.
+            We keep recommendations helpful, moderation strong, and the overall
+            experience focused on community.
+          </p>
+          <p className="about-text">
+            EventPlanner8 is open source here:{' '}
+            <a
+              className="about-link"
+              href="https://github.com/josephreilly22/cen3031-teamproject"
+              target="_blank"
+              rel="noreferrer"
+            >
+              github.com/josephreilly22/cen3031-teamproject
+            </a>
           </p>
         </div>
 
-        <p className="about-footer">Made with passion by students at the University of Florida.</p>
       </section>
     </div>
   );

@@ -31,9 +31,16 @@
   line-height: 1.75;
 }
 
-.about-footer {
+.about-link {
   color: #3b3fa0;
-  font-size: 0.95rem;
   font-weight: 600;
-  margin-top: 8px;
+  text-decoration: none;
+  border-bottom: 1px solid rgba(59, 63, 160, 0.35);
 }
+
+.about-link:hover,
+.about-link:focus-visible {
+  color: #2a2f8a;
+  border-bottom-color: rgba(42, 47, 138, 0.7);
+}
+

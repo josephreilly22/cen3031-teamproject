@@ -66,24 +66,31 @@ function Home() {
 function App() {
   return (
     <BrowserRouter>
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/login" element={<LoginPage />} />
-        <Route path="/host-registeration" element={<HostRegistrationPage />} />
-        <Route path="/hostregistration" element={<HostRegistrationPage />} />
-        <Route path="/about" element={<AboutPage />} />
-        <Route path="/signup" element={<SignupPage />} />
-        <Route path="/dashboard" element={<DashboardPage />} />
-        <Route path="/dashboard/:eventId" element={<EventDetailsPage />} />
-        <Route path="/profile" element={<ProfilePage />} />
-        <Route path="/onboarding" element={<OnboardingPage />} />
-        <Route path="/admin" element={<AdminDashboard />} />
-        <Route path="/event-registrations" element={<AdminDashboard />} />
-        <Route path="/create-event" element={<CreateEventPage />} />
-        <Route path="/edit-event/:eventId" element={<EditEventPage />} />
-        <Route path="/report-event/:eventId" element={<ReportEventPage />} />
-        <Route path="/my-events" element={<MyEventsPage />} />
-      </Routes>
+      <div className="site-shell">
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/host-registeration" element={<HostRegistrationPage />} />
+          <Route path="/hostregistration" element={<HostRegistrationPage />} />
+          <Route path="/about" element={<AboutPage />} />
+          <Route path="/signup" element={<SignupPage />} />
+          <Route path="/dashboard" element={<DashboardPage />} />
+          <Route path="/dashboard/:eventId" element={<EventDetailsPage />} />
+          <Route path="/profile" element={<ProfilePage />} />
+          <Route path="/onboarding" element={<OnboardingPage />} />
+          <Route path="/admin" element={<AdminDashboard />} />
+          <Route path="/event-registrations" element={<AdminDashboard />} />
+          <Route path="/create-event" element={<CreateEventPage />} />
+          <Route path="/edit-event/:eventId" element={<EditEventPage />} />
+          <Route path="/report-event/:eventId" element={<ReportEventPage />} />
+          <Route path="/my-events" element={<MyEventsPage />} />
+        </Routes>
+
+        <footer className="site-footer">
+          <span className="site-footer-symbol" aria-hidden="true">✦</span>
+          Made with passion by students at the University of Florida.
+        </footer>
+      </div>
     </BrowserRouter>
   );
 }

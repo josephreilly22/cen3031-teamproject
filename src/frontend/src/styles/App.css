@@ -33,6 +33,37 @@ body {
   min-height: 100%;
 }
 
+.site-shell {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.site-shell > *:first-child {
+  flex: 1;
+}
+
+.site-footer {
+  color: rgba(123, 128, 168, 0.52);
+  font-size: 0.62rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  line-height: 1;
+  text-transform: uppercase;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 16px 20px 18px;
+  text-align: center;
+}
+
+.site-footer-symbol {
+  font-size: 0.66rem;
+  line-height: 1;
+  color: currentColor;
+}
+
 .app {
   min-height: 100vh;
   display: flex;
