@@ -4,6 +4,11 @@ import '../styles/MyEventsPage.css';
 import LoggedInNavbar from '../components/LoggedInNavbar';
 import OverflowTitle from '../components/OverflowTitle';
 import { getAuthSession } from '../utils/authSession';
+import {
+  formatDateTimeToLocal,
+  isEventLiveNow,
+  isEventExpired,
+} from '../utils/dateTimeUtils';
 
 const LOCATION_ENABLED_KEY = 'eventplanner.locationEnabled';
 const LOCATION_COORDS_KEY = 'eventplanner.locationCoords';
@@ -62,12 +67,6 @@ function formatDistanceLabel(distanceMiles) {
   return `${distanceMiles.toFixed(distanceMiles >= 10 ? 0 : 1)} mi`;
 }
 
-// Parse UTC datetimes from backend (which now always include 'Z')
-function parseBackendDateTime(dateStr) {
-  if (!dateStr) return null;
-  return new Date(dateStr);
-}
-
 function MyEventsPage() {
   const navigate = useNavigate();
   const session = getAuthSession();
@@ -88,7 +87,9 @@ function MyEventsPage() {
       .then((r) => r.json())
       .then((data) => {
         if (data.success) {
-          const sortedEvents = [...(data.events || [])].sort((a, b) => {
+          // Filter out expired events
+          const activeEvents = (data.events || []).filter((event) => !isEventExpired(event.end_date));
+          const sortedEvents = activeEvents.sort((a, b) => {
             const aTime = new Date(a.date || 0).getTime();
             const bTime = new Date(b.date || 0).getTime();
             return aTime - bTime;
@@ -104,23 +105,13 @@ function MyEventsPage() {
 
   const formatDate = (dateStr) => {
     if (!dateStr) return '';
-    const parsed = parseBackendDateTime(dateStr);
-    if (parsed && !Number.isNaN(parsed.getTime())) {
-      return parsed.toLocaleString('en-US', {
-        month: 'short',
-        day: 'numeric',
-        year: 'numeric',
-        hour: 'numeric',
-        minute: '2-digit',
-      });
-    }
-
-    const dateOnly = parseBackendDateTime(`${dateStr}T00:00:00`);
-    if (dateOnly && !Number.isNaN(dateOnly.getTime())) {
-      return dateOnly.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-    }
-
-    return dateStr;
+    return formatDateTimeToLocal(dateStr, {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
+      hour: 'numeric',
+      minute: '2-digit',
+    });
   };
 
   const formatEventWindow = (start, end) => {
@@ -138,18 +129,6 @@ function MyEventsPage() {
     if (types.includes('on-campus')) labels.push('On-Campus');
     if (types.includes('off-campus')) labels.push('Off-Campus');
     return labels.join(', ');
-  };
-
-  const isEventLive = (start, end) => {
-    const now = new Date();
-    const startTime = start ? new Date(start) : null;
-    const endTime = end ? new Date(end) : null;
-    return Boolean(
-      startTime &&
-      !Number.isNaN(startTime.getTime()) &&
-      startTime <= now &&
-      (!endTime || Number.isNaN(endTime.getTime()) || endTime >= now)
-    );
   };
 
   const handleEditEvent = (eventId) => {
@@ -221,7 +200,7 @@ function MyEventsPage() {
               >
                 <div className="my-event-title-row">
                   <OverflowTitle text={event.title || ''} className="my-event-title" />
-                  {isEventLive(event.date, event.end_date) && (
+                  {isEventLiveNow(event.date, event.end_date) && (
                     <span className="my-event-live">
                       <span className="my-event-live-dot" aria-hidden="true" />
                       LIVE

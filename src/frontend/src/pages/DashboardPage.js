@@ -4,6 +4,12 @@ import '../styles/DashboardPage.css';
 import LoggedInNavbar from '../components/LoggedInNavbar';
 import OverflowTitle from '../components/OverflowTitle';
 import { getAuthSession } from '../utils/authSession';
+import {
+  parseBackendDateTime,
+  formatDateTimeToLocal,
+  isEventLiveNow,
+  isEventExpired,
+} from '../utils/dateTimeUtils';
 
 const LOCATION_ENABLED_KEY = 'eventplanner.locationEnabled';
 const LOCATION_COORDS_KEY = 'eventplanner.locationCoords';
@@ -62,25 +68,7 @@ function formatDistanceLabel(distanceMiles) {
   return `${distanceMiles.toFixed(distanceMiles >= 10 ? 0 : 1)} mi`;
 }
 
-// Parse UTC datetimes from backend (which now always include 'Z')
-function parseBackendDateTime(dateStr) {
-  if (!dateStr) return null;
-  return new Date(dateStr);
-}
-
-function isEventLiveNow(start, end, now = new Date()) {
-  const startTime = start ? new Date(start) : null;
-  const endTime = end ? new Date(end) : null;
-
-  return Boolean(
-    startTime &&
-    !Number.isNaN(startTime.getTime()) &&
-    startTime <= now &&
-    (!endTime || Number.isNaN(endTime.getTime()) || endTime >= now)
-  );
-}
-
-function EventTile({ event, attending, hosting, userLocation, locationEnabled }) {
+function EventTile({ event, attending, hosting, userLocation, locationEnabled, liveCheckTick }) {
   const navigate = useNavigate();
   const titleText = event.title || '';
 
@@ -96,28 +84,13 @@ function EventTile({ event, attending, hosting, userLocation, locationEnabled })
 
   const formatDate = (dateStr) => {
     if (!dateStr) return '';
-
-    const parsed = parseBackendDateTime(dateStr);
-    if (parsed && !Number.isNaN(parsed.getTime())) {
-      return parsed.toLocaleString('en-US', {
-        month: 'short',
-        day: 'numeric',
-        year: 'numeric',
-        hour: 'numeric',
-        minute: '2-digit',
-      });
-    }
-
-    const dateOnly = parseBackendDateTime(`${dateStr}T00:00:00`);
-    if (dateOnly && !Number.isNaN(dateOnly.getTime())) {
-      return dateOnly.toLocaleDateString('en-US', {
-        month: 'short',
-        day: 'numeric',
-        year: 'numeric',
-      });
-    }
-
-    return dateStr;
+    return formatDateTimeToLocal(dateStr, {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
+      hour: 'numeric',
+      minute: '2-digit',
+    });
   };
 
   const formatEventWindow = (start, end) => ({
@@ -137,7 +110,8 @@ function EventTile({ event, attending, hosting, userLocation, locationEnabled })
   };
 
   const { startLabel, endLabel } = formatEventWindow(event.date, event.end_date);
-  const live = isEventLiveNow(event.date, event.end_date);
+  // Use liveCheckTick to force re-evaluation of live status periodically
+  const live = liveCheckTick && isEventLiveNow(event.date, event.end_date);
   const campusLabel = formatLocationTypes(event.location_types);
   const cardDescription = formatCardDescription(event.description);
   const eventCoordinates = Array.isArray(event.coordinates) && event.coordinates.length === 2
@@ -505,10 +479,13 @@ function DashboardPage() {
   });
   const attendingEventIdSet = new Set(attendingEventIds);
   const displayedAllEvents = allEventsSort === 'attending'
-    ? sortedAllEvents.filter((event) => (
-      attendingEventIdSet.has(event.id) || event.owner_email === session.email
-    ))
-    : sortedAllEvents;
+    ? sortedAllEvents
+      .filter((event) => (
+        attendingEventIdSet.has(event.id) || event.owner_email === session.email
+      ))
+      .filter((event) => !isEventExpired(event.end_date))
+    : sortedAllEvents.filter((event) => !isEventExpired(event.end_date));
+  
   const relevantLiveEvents = events.filter((event) => (
     attendingEventIdSet.has(event.id) || event.owner_email === session.email
   ));
@@ -517,8 +494,10 @@ function DashboardPage() {
   const aiSuggestedIds = new Set(suggestedEvents.map((event) => event.id));
   const supplementalTagSuggestedEvents = tagSuggestedEvents.filter((event) => !aiSuggestedIds.has(event.id));
   const displayedSuggestedEvents = hasAiInterests
-    ? [...suggestedEvents, ...supplementalTagSuggestedEvents].slice(0, 5)
-    : tagSuggestedEvents;
+    ? [...suggestedEvents, ...supplementalTagSuggestedEvents]
+      .slice(0, 5)
+      .filter((event) => !isEventExpired(event.end_date))
+    : tagSuggestedEvents.filter((event) => !isEventExpired(event.end_date));
   const aiScoreThreshold = getAiScoreThreshold(diversity);
   const hasActiveAiSuggestions = displayedSuggestedEvents.some((event) => (
     Boolean(event?.ai_ranked) && Number(event?.ai_score) > aiScoreThreshold
@@ -681,6 +660,7 @@ function DashboardPage() {
                     hosting={event.owner_email === session.email}
                     userLocation={userLocation}
                     locationEnabled={locationEnabled}
+                    liveCheckTick={liveCheckTick}
                   />
                 ))}
               </div>
@@ -757,6 +737,7 @@ function DashboardPage() {
                   hosting={event.owner_email === session.email}
                   userLocation={userLocation}
                   locationEnabled={locationEnabled}
+                  liveCheckTick={liveCheckTick}
                 />
               ))}
             </div>

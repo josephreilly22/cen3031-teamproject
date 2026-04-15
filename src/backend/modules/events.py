@@ -22,12 +22,13 @@ _last_event_purge_at = None
 # Functions
 def _parse_event_datetime(date: str):
     try:
-        # Accept ISO strings with 'Z' or offsets and normalize to naive UTC
+        # Accept ISO strings with 'Z' or offsets and normalize to UTC
         if isinstance(date, str) and date.endswith('Z'):
             date = date[:-1] + '+00:00'
         dt = datetime.fromisoformat(date)
         if dt.tzinfo is not None:
             dt = dt.astimezone(timezone.utc).replace(tzinfo=None)
+        # Ensure we're treating this as UTC for storage
         return dt
     except Exception:
         raise ValueError("Invalid event date and time")
@@ -480,8 +481,15 @@ def create_event(owner_email: str, title: str, host: str, date: str, end_date: s
     coordinates = _normalize_coordinates(coordinates)
     if not location_types:
         raise ValueError("Select at least one event location type")
+    
+    # Ensure dates have 'Z' indicator for UTC
+    if isinstance(date, str) and date and not date.endswith('Z'):
+        date = f"{date}Z"
+    if isinstance(end_date, str) and end_date and not end_date.endswith('Z'):
+        end_date = f"{end_date}Z"
+    
     event_id = str(uuid.uuid4())
-    published_at = datetime.utcnow().isoformat()
+    published_at = datetime.utcnow().isoformat() + 'Z'
     event = {
         "id": event_id,
         "owner_email": owner_email,
@@ -527,6 +535,7 @@ def get_all_events():
     return {"success": True, "events": events}
 
 async def get_recommended_events(email: str):
+    _purge_expired_events()
     user, _ = users_database.get_document(email)
     if user is None:
         return {"success": False, "message": "User not found"}
@@ -608,6 +617,7 @@ async def get_recommended_events(email: str):
     return {"success": True, "events": ranked_events[:5], "ai_ranked": True}
 
 def get_event(event_id: str):
+    _purge_expired_events()
     event, _ = events_database.get_document(event_id)
     if event is None:
         return {"success": False, "message": "Event not found"}
@@ -616,6 +626,7 @@ def get_event(event_id: str):
     return {"success": True, "event": event}
 
 def get_event_attendees(event_id: str):
+    _purge_expired_events()
     event, _ = events_database.get_document(event_id)
     if event is None:
         return {"success": False, "message": "Event not found"}
@@ -700,6 +711,12 @@ def update_event(event_id: str, owner_email: str, title: str, host: str, date: s
     coordinates = _normalize_coordinates(coordinates)
     if not location_types:
         raise ValueError("Select at least one event location type")
+
+    # Ensure dates have 'Z' indicator for UTC
+    if isinstance(date, str) and date and not date.endswith('Z'):
+        date = f"{date}Z"
+    if isinstance(end_date, str) and end_date and not end_date.endswith('Z'):
+        end_date = f"{end_date}Z"
 
     event.update({
         "title": title,

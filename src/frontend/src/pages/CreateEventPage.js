@@ -30,14 +30,19 @@ function CreateEventPage() {
 
   const localDateTimeToUTC = (localDateTimeStr) => {
     if (!localDateTimeStr) return '';
-    // Create a Date interpreting the string as local time
+    // Convert local time string to UTC ISO string
+    // The datetime-local input provides "YYYY-MM-DDTHH:mm" in local time
     const [datePart, timePart] = localDateTimeStr.split('T');
     const [year, month, day] = datePart.split('-').map(Number);
     const [hours, minutes] = (timePart || '00:00').split(':').map(Number);
+    
+    // Create a date object interpreting the values as local time
     const localDate = new Date(year, month - 1, day, hours, minutes, 0);
     if (Number.isNaN(localDate.getTime())) return localDateTimeStr;
-    // Convert local to UTC by adding the timezone offset
-    const utcDate = new Date(localDate.getTime() + localDate.getTimezoneOffset() * 60000);
+    
+    // Convert to UTC: subtract the timezone offset (which is in minutes)
+    // Positive offset (e.g., EDT -4 hours) = -240 minutes, so we subtract it to go to UTC
+    const utcDate = new Date(localDate.getTime() - localDate.getTimezoneOffset() * 60000);
     return formatDateTimeUTC(utcDate);
   };
 
