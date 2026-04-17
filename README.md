@@ -4,7 +4,7 @@
 
 Whether you're trying to get more involved this year or just looking to try new things, **EventPlanner8** is the solution. Our platform connects users with local events tailored to their interests, powered by personalized recommendations and a secure, verified host ecosystem.
 
-Visit our deployment demo at [https://eventplanner8.koyeb.app/](https://eventplanner8.koyeb.app/).
+Visit our deployment demo at [https://eventplanner8.com/](https://eventplanner8.com/) or [https://eventplanner8.koyeb.app/](https://eventplanner8.koyeb.app/).
 
 ---
 
@@ -143,7 +143,7 @@ Then copy `src/frontend/build` to `src/backend/frontend_build` before starting t
 
 - `WORKDIR` to `src/backend`
 - `RUN COMMAND` to `uvicorn main:app --host 0.0.0.0 --port $PORT`
-- `PING_DOMAIN` to your public app URL, such as `https://eventplanner8.koyeb.app/`
+- `PING_DOMAIN` to your public app URL, such as `https://eventplanner8.com/` or `https://eventplanner8.koyeb.app/`
 
 When the frontend build is present, `GET /` returns the React app. If no build is present, the backend falls back to the JSON health response.
 
