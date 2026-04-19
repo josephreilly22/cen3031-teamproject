@@ -5,21 +5,29 @@ from modules.database import database
 from modules.engine import give_recommendation
 
 # Variables
+# Database collections
 events_database = database("Events")
 users_database = database("Users")
 reports_database = database("EventReports")
+# Event field constraints
 EVENT_TITLE_MAX_LENGTH = 32
 EVENT_HOST_MAX_LENGTH = 64
 EVENT_LOCATION_MAX_LENGTH = 128
 EVENT_DESCRIPTION_MAX_LENGTH = 1024
 AI_CHOICE_MAX_LENGTH = 64
+# Valid report reasons for event moderation
 REPORT_REASONS = {"Spam", "Harassment", "Explicit", "Irrelevant", "Other"}
+# Rate limiting for event creation (seconds between events per user)
 EVENT_CREATION_RATE_LIMIT_SECONDS = 5
+# Precision for storing geographical coordinates
 COORDINATE_PRECISION = 6
+# Interval for purging expired events (seconds)
 EVENT_PURGE_INTERVAL_SECONDS = 60
+# Track last purge time to avoid excessive database queries
 _last_event_purge_at = None
 
-# Functions
+# Helper Functions - DateTime Processing
+# Parse event datetime and normalize to UTC
 def _parse_event_datetime(date: str):
     try:
         # Accept ISO strings with 'Z' or offsets and normalize to UTC
@@ -33,11 +41,13 @@ def _parse_event_datetime(date: str):
     except Exception:
         raise ValueError("Invalid event date and time")
 
+# Check if two event datetimes are in the same minute
 def _same_event_minute(first_date: str, second_date: str):
     first_time = _parse_event_datetime(first_date).replace(second=0, microsecond=0)
     second_time = _parse_event_datetime(second_date).replace(second=0, microsecond=0)
     return first_time == second_time
 
+# Validate event has valid start and end times (not in past unless updating)
 def _validate_event_window(start_date: str, end_date: str, allow_existing_past_start: bool = False):
     start_time = _parse_event_datetime(start_date)
     end_time = _parse_event_datetime(end_date)
@@ -52,6 +62,8 @@ def _validate_event_window(start_date: str, end_date: str, allow_existing_past_s
 
     return start_date, end_date
 
+# Helper Functions - Event Validation
+# Validate and normalize location type preferences (on-campus/off-campus)
 def _normalize_location_types(location_types):
     if location_types is None:
         return []
@@ -59,6 +71,7 @@ def _normalize_location_types(location_types):
     if not isinstance(location_types, list):
         raise ValueError("Invalid event location type")
 
+    # Filter to only allowed location types
     allowed = []
     for item in location_types:
         if not isinstance(item, str):
@@ -69,6 +82,7 @@ def _normalize_location_types(location_types):
 
     return allowed
 
+# Validate and normalize event description text
 def _normalize_event_description(description: str):
     if not isinstance(description, str):
         raise ValueError("Description must be a string")
@@ -79,10 +93,12 @@ def _normalize_event_description(description: str):
 
     return trimmed
 
+# Validate and normalize event title
 def _normalize_event_title(title: str):
     if not isinstance(title, str):
         raise ValueError("Title must be a string")
 
+    # Remove line breaks and excess whitespace
     normalized = " ".join(title.replace("\r", " ").replace("\n", " ").split())
     if not normalized:
         raise ValueError("Title is required")
@@ -91,6 +107,7 @@ def _normalize_event_title(title: str):
 
     return normalized
 
+# Validate and normalize event host/organizer name
 def _normalize_event_host(host: str):
     if not isinstance(host, str):
         raise ValueError("Host must be a string")
@@ -103,6 +120,7 @@ def _normalize_event_host(host: str):
 
     return normalized
 
+# Validate and normalize event location string
 def _normalize_event_location(location: str):
     if not isinstance(location, str):
         raise ValueError("Location must be a string")
@@ -115,6 +133,7 @@ def _normalize_event_location(location: str):
 
     return trimmed
 
+# Validate and normalize geographical coordinates (latitude, longitude)
 def _normalize_coordinates(coordinates):
     if coordinates is None or coordinates == "":
         return None
@@ -128,6 +147,7 @@ def _normalize_coordinates(coordinates):
     except (TypeError, ValueError):
         raise ValueError("Invalid coordinates")
 
+    # Validate latitude and longitude ranges
     if latitude < -90 or latitude > 90:
         raise ValueError("Invalid coordinates")
     if longitude < -180 or longitude > 180:
@@ -135,6 +155,8 @@ def _normalize_coordinates(coordinates):
 
     return [latitude, longitude]
 
+# Helper Functions - Event Management
+# Get expiry time of event from end_date or date field
 def _event_expiry_time(event: dict):
     end_date = event.get("end_date") or event.get("date")
     if not end_date:
@@ -305,175 +327,149 @@ def _event_creation_is_rate_limited(owner_email: str):
     if latest_published_at is None:
         return False
 
+    # Check if user is creating events too quickly
     elapsed_seconds = (datetime.utcnow() - latest_published_at).total_seconds()
     return elapsed_seconds < EVENT_CREATION_RATE_LIMIT_SECONDS
 
-def _delete_event_records(event_id: str):
-    event, _ = events_database.get_document(event_id)
-    if event is None:
-        return None
-
-    events_database.remove_document(event_id)
-    _remove_reports_for_event(event_id)
-    return event
-
-def delete_events_for_owner(owner_email: str):
-    removed_event_ids = []
-    removed_report_count = 0
-
-    for doc in events_database.get_collection({"owner_email": owner_email}):
-        event = doc.get("value")
-        if not isinstance(event, dict):
-            continue
-
-        event_id = doc.get("key")
-        if not isinstance(event_id, str) or not event_id.strip():
-            continue
-
-        removed_report_count += _remove_reports_for_event(event_id)
-        events_database.remove_document(event_id)
-        removed_event_ids.append(event_id)
-
-    return {
-        "removed_event_ids": removed_event_ids,
-        "removed_event_count": len(removed_event_ids),
-        "removed_report_count": removed_report_count,
-    }
-
-def _can_manage_event(actor_email: str, event: dict):
-    if event.get("owner_email") == actor_email:
-        return True
-
-    user, _ = users_database.get_document(actor_email)
-    return isinstance(user, dict) and user.get("role") == "admin"
-
-def _normalize_report_reason(reason: str):
-    if not isinstance(reason, str):
-        raise ValueError("Reason must be a string")
-
-    normalized = " ".join(reason.strip().split())
-    if normalized not in REPORT_REASONS:
-        raise ValueError("Invalid report reason")
-
-    return normalized
+# Helper functions for permission and deletion management
+def _can_manage_event(owner_email: str, event: dict):
+    # Check if user is the event owner or an admin
+    user, _ = users_database.get_document(owner_email)
+    if user is None:
+        return False
+    return user.get("role") == "admin" or event.get("owner_email") == owner_email
 
 def _is_admin(email: str):
+    # Check if user has admin role
     user, _ = users_database.get_document(email)
-    return isinstance(user, dict) and user.get("role") == "admin"
+    if user is None:
+        return False
+    return user.get("role") == "admin"
 
-def _report_sort_key(report: dict):
-    return report.get("created_at", "")
-
-def _group_reports_by_event(include_resolved: bool = False):
-    grouped_reports = {}
-
-    report_docs = reports_database.get_collection() if include_resolved else reports_database.get_collection({"status": {"$ne": "resolved"}})
-
-    for doc in report_docs:
-        report = doc.get("value")
-        if not isinstance(report, dict):
-            continue
-
-        event_id = str(report.get("event_id", "")).strip()
-        if not event_id:
-            continue
-
-        grouped_reports.setdefault(event_id, []).append(report)
-
-    return grouped_reports
-
-def _build_report_summary(event_id: str, reports: list[dict]):
-    if not reports:
-        return None
-
+def _delete_event_records(event_id: str):
+    # Delete event from database and remove from all attendee profiles
     event, _ = events_database.get_document(event_id)
-    latest_report = max(reports, key=_report_sort_key)
-    reason_counts = {reason: 0 for reason in sorted(REPORT_REASONS)}
-    for report in reports:
-        reason = report.get("reason", "")
-        if reason in reason_counts:
-            reason_counts[reason] += 1
-
-    total_reports = sum(reason_counts.values())
-    if total_reports <= 0:
-        return None
-
-    return {
-        "event_id": event_id,
-        "event_title": (event or {}).get("title") or latest_report.get("event_title", "Untitled Event"),
-        "event_owner_email": (event or {}).get("owner_email") or latest_report.get("event_owner_email", ""),
-        "event_exists": isinstance(event, dict),
-        "total_reports": total_reports,
-        "latest_reported_at": latest_report.get("created_at", ""),
-        "reason_counts": reason_counts,
-    }
-
-def _reporter_identity(report: dict):
-    if report.get("reporter_deleted"):
-        return {
-            "first_name": "Deleted",
-            "last_name": "User",
-            "email": "N/A",
-            "deleted": True,
-        }
-
-    reporter_email = str(report.get("reporter_email", "")).strip()
-    reporter, _ = users_database.get_document(reporter_email) if reporter_email else (None, None)
-
-    if isinstance(reporter, dict):
-        first_name = reporter.get("first_name", "")
-        last_name = reporter.get("last_name", "")
-        email = reporter_email or "N/A"
-        deleted = False
-    else:
-        first_name = "Deleted"
-        last_name = "User"
-        email = "N/A"
-        deleted = True
-
-    return {
-        "first_name": first_name,
-        "last_name": last_name,
-        "email": email,
-        "deleted": deleted,
-    }
+    if isinstance(event, dict):
+        attendees = event.get("attendee_emails", [])
+        for attendee_email in attendees:
+            user, _ = users_database.get_document(attendee_email)
+            if isinstance(user, dict):
+                attending = user.get("attending_event_ids", [])
+                user["attending_event_ids"] = [eid for eid in attending if eid != event_id]
+                users_database.set_document(attendee_email, user)
+    
+    # Delete event from events database
+    events_database.remove_document(event_id)
+    
+    # Remove all reports for this event
+    _remove_reports_for_event(event_id)
 
 def _remove_reports_for_event(event_id: str):
-    removed = 0
+    # Delete all reports for a specific event and return count
+    removed_count = 0
     for doc in reports_database.get_collection({"event_id": event_id}):
-        report = doc.get("value")
-        if not isinstance(report, dict):
-            continue
-        reports_database.remove_document(doc.get("key"))
-        removed += 1
-    return removed
+        report_id = doc.get("key")
+        if report_id:
+            reports_database.remove_document(report_id)
+            removed_count += 1
+    return removed_count
 
-def remove_reports_by_reporter(reporter_email: str):
-    removed = 0
+def _normalize_report_reason(reason: str):
+    # Validate and normalize report reason
+    reason = str(reason).strip()
+    if reason not in REPORT_REASONS:
+        return "Other"
+    return reason
+
+def _reporter_identity(email: str):
+    # Get reporter's display name and role for reports
+    user, _ = users_database.get_document(email)
+    if not isinstance(user, dict):
+        return {"first_name": "", "last_name": "", "role": "user"}
+    return {
+        "first_name": user.get("first_name", ""),
+        "last_name": user.get("last_name", ""),
+        "role": user.get("role", "user"),
+    }
+
+def _group_reports_by_event():
+    # Group all reports by event_id for admin dashboard
+    grouped = {}
     for doc in reports_database.get_collection():
         report = doc.get("value")
         if not isinstance(report, dict):
             continue
-        report_key = str(doc.get("key", "")).strip()
-        if report.get("reporter_email") != reporter_email and not report_key.endswith(f":{reporter_email}"):
-            continue
+        event_id = report.get("event_id")
+        if event_id not in grouped:
+            grouped[event_id] = []
+        grouped[event_id].append(report)
+    return grouped
 
-        reports_database.remove_document(report_key)
-        removed += 1
+def _build_report_summary(event_id: str, reports: list):
+    # Build summary for a reported event
+    if not reports:
+        return None
+    
+    event, _ = events_database.get_document(event_id)
+    if not isinstance(event, dict):
+        return None
+    
+    latest_report = max(reports, key=lambda r: r.get("created_at", ""))
+    return {
+        "event_id": event_id,
+        "event_title": event.get("title", ""),
+        "event_owner_email": event.get("owner_email", ""),
+        "total_reports": len(reports),
+        "latest_reported_at": latest_report.get("created_at", ""),
+        "status": latest_report.get("status", "open"),
+    }
 
-    return removed
+# Public functions for account deletion cleanup
+def delete_events_for_owner(owner_email: str):
+    # Delete all events created by a user (called when account is deleted or hoster role removed)
+    removed_event_count = 0
+    removed_report_count = 0
+    
+    for doc in events_database.get_collection({"owner_email": owner_email}):
+        event_id = doc.get("key")
+        if event_id:
+            removed_report_count += _remove_reports_for_event(event_id)
+            _delete_event_records(event_id)
+            removed_event_count += 1
+    
+    return {
+        "removed_event_count": removed_event_count,
+        "removed_report_count": removed_report_count,
+    }
 
+def remove_reports_by_reporter(reporter_email: str):
+    # Remove all reports submitted by a user (called when account is deleted)
+    removed_count = 0
+    
+    for doc in reports_database.get_collection({"reporter_email": reporter_email}):
+        report_id = doc.get("key")
+        if report_id:
+            reports_database.remove_document(report_id)
+            removed_count += 1
+    
+    return removed_count
+
+# Public Event Management Functions
+# Create new event (hoster/admin only)
 def create_event(owner_email: str, title: str, host: str, date: str, end_date: str, location: str, location_types, description: str, coordinates=None):
     user, _ = users_database.get_document(owner_email)
     if user is None:
         return {"success": False, "message": "User not found"}
 
+    # Only hosters and admins can create events
     if user.get("role") not in {"hoster", "admin"}:
         return {"success": False, "message": "Only hosters and admins can create events"}
 
+    # Enforce rate limiting for non-admins
     if user.get("role") != "admin" and _event_creation_is_rate_limited(owner_email):
         return {"success": False, "message": "You are making events too fast. Please wait 5 seconds before creating another event."}
 
+    # Validate and normalize all event fields
     title = _normalize_event_title(title)
     host = _normalize_event_host(host)
     date, end_date = _validate_event_window(date, end_date)
@@ -490,6 +486,7 @@ def create_event(owner_email: str, title: str, host: str, date: str, end_date: s
     if isinstance(end_date, str) and end_date and not end_date.endswith('Z'):
         end_date = f"{end_date}Z"
     
+    # Create event document
     event_id = str(uuid.uuid4())
     published_at = datetime.utcnow().isoformat() + 'Z'
     event = {
@@ -511,6 +508,7 @@ def create_event(owner_email: str, title: str, host: str, date: str, end_date: s
     events_database.set_document(event_id, event)
     return {"success": True, "message": "Event created", "event": event}
 
+# Get all events created by a hoster
 def get_events_by_host(owner_email: str):
     _purge_expired_events()
     events = []
@@ -520,9 +518,11 @@ def get_events_by_host(owner_email: str):
             continue
         event = _ensure_event_defaults(event)
         events.append(event)
+    # Sort by creation date, newest first
     events.sort(key=lambda e: e.get("created_at", ""), reverse=True)
     return {"success": True, "events": events}
 
+# Get all events across the platform
 def get_all_events():
     _purge_expired_events()
     all_events = events_database.get_collection()
@@ -534,9 +534,11 @@ def get_all_events():
         event = _ensure_event_defaults(event)
         events.append(event)
 
+    # Sort by event date
     events.sort(key=lambda e: e.get("date", ""))
     return {"success": True, "events": events}
 
+# Get recommended events for user using AI
 async def get_recommended_events(email: str):
     _purge_expired_events()
     user, _ = users_database.get_document(email)
@@ -550,6 +552,7 @@ async def get_recommended_events(email: str):
     if not interests or not allowed_tags:
         return {"success": True, "events": [], "ai_ranked": False}
 
+    # Get candidate events matching user's location preferences
     candidate_events = []
     for doc in events_database.get_collection({"location_types": {"$in": list(allowed_tags)}}):
         event = doc.get("value")
@@ -562,52 +565,23 @@ async def get_recommended_events(email: str):
     if not candidate_events:
         return {"success": True, "events": [], "ai_ranked": False}
 
-    query = interests
-    if not query:
-        return {"success": True, "events": [], "ai_ranked": False}
+    # Build event texts and lookup for AI scoring
+    event_texts = [_event_recommendation_text(event) for event in candidate_events]
+    event_lookup = {_event_recommendation_text(event): event for event in candidate_events}
 
-    event_texts = []
-    event_lookup = {}
-    for event in candidate_events:
-        summary = _event_recommendation_text(event)
-        if not summary:
-            continue
-        if summary in event_lookup:
-            summary = f"{summary} [{event.get('id', '')}]"
-        event_texts.append(summary)
-        event_lookup[summary] = event
-
-    if not event_texts:
-        return {"success": True, "events": [], "ai_ranked": False}
-
+    # Call AI engine to rank events based on user interests
     try:
-        result = await give_recommendation(query, event_texts)
+        result = await give_recommendation(interests, event_texts)
+        event_scores = _extract_ranked_scores(result)
     except Exception:
         return {"success": True, "events": [], "ai_ranked": False}
 
-    ranked_batches = _extract_ranked_scores(result)
-    event_scores = {}
-    for batch in ranked_batches:
-        if not isinstance(batch, list):
-            continue
-
-        for item in batch:
-            if not isinstance(item, dict):
-                continue
-
-            label = item.get("label")
-            score = item.get("score")
-            if not isinstance(label, str) or not isinstance(score, (int, float)):
-                continue
-            if score <= score_threshold:
-                continue
-
-            previous = event_scores.get(label, float("-inf"))
-            if score > previous:
-                event_scores[label] = float(score)
-
+    # Extract and rank scored events
     ranked_events = []
     for label, score in sorted(event_scores.items(), key=lambda pair: pair[1], reverse=True):
+        if score < score_threshold:
+            continue
+        
         event = event_lookup.get(label)
         if not event:
             continue

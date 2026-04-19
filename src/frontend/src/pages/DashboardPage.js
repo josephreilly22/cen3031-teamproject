@@ -11,9 +11,11 @@ import {
   isEventExpired,
 } from '../utils/dateTimeUtils';
 
+// LocalStorage keys for location data
 const LOCATION_ENABLED_KEY = 'eventplanner.locationEnabled';
 const LOCATION_COORDS_KEY = 'eventplanner.locationCoords';
 
+// Load saved location from localStorage
 function loadStoredLocation() {
   try {
     const enabled = localStorage.getItem(LOCATION_ENABLED_KEY) === 'true';
@@ -35,6 +37,7 @@ function loadStoredLocation() {
   }
 }
 
+// Calculate distance between two coordinates using Haversine formula
 function getDistanceInMiles(from, to) {
   if (!Array.isArray(from) || !Array.isArray(to) || from.length !== 2 || to.length !== 2) {
     return null;
@@ -46,6 +49,7 @@ function getDistanceInMiles(from, to) {
     return null;
   }
 
+  // Haversine distance calculation
   const toRadians = (value) => (value * Math.PI) / 180;
   const earthRadiusMiles = 3958.8;
   const latDelta = toRadians(toLat - fromLat);
@@ -55,6 +59,7 @@ function getDistanceInMiles(from, to) {
   return earthRadiusMiles * (2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a)));
 }
 
+// Format distance for display (feet if <1 mile, miles otherwise)
 function formatDistanceLabel(distanceMiles) {
   if (!Number.isFinite(distanceMiles)) {
     return '';
@@ -68,10 +73,12 @@ function formatDistanceLabel(distanceMiles) {
   return `${distanceMiles.toFixed(distanceMiles >= 10 ? 0 : 1)} mi`;
 }
 
+// Event tile component - displays single event card
 function EventTile({ event, attending, hosting, userLocation, locationEnabled, liveCheckTick }) {
   const navigate = useNavigate();
   const titleText = event.title || '';
 
+  // Extract first sentence from description for preview
   const formatCardDescription = (value) => {
     const normalized = (value || '').trim();
     if (!normalized) {
@@ -82,6 +89,7 @@ function EventTile({ event, attending, hosting, userLocation, locationEnabled, l
     return (sentenceMatch ? sentenceMatch[0] : normalized).trim();
   };
 
+  // Format event date/time for display
   const formatDate = (dateStr) => {
     if (!dateStr) return '';
     return formatDateTimeToLocal(dateStr, {
@@ -93,6 +101,7 @@ function EventTile({ event, attending, hosting, userLocation, locationEnabled, l
     });
   };
 
+  // Get event window (start and end time labels)
   const formatEventWindow = (start, end) => ({
     startLabel: formatDate(start),
     endLabel: formatDate(end),

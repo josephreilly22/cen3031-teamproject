@@ -16,10 +16,12 @@ import MyEventsPage from '../pages/MyEventsPage';
 import SiteNavbar from '../components/SiteNavbar';
 import { getAuthSession } from '../utils/authSession';
 
+// Home page component - landing page with marketing content
 function Home() {
   const navigate = useNavigate();
   const session = getAuthSession();
 
+  // Personalize CTA button based on auth status
   const primaryCtaLabel = session.signedIn ? 'Go to Dashboard →' : 'Get Started →';
   const primaryCtaPath = session.signedIn ? '/dashboard' : '/signup';
 
@@ -41,6 +43,7 @@ function Home() {
           <button className="btn-secondary" onClick={() => navigate('/about')}>Learn More</button>
         </div>
 
+        {/* Feature cards highlighting key benefits */}
         <div className="cards">
           <div className="card">
             <div className="card-icon icon-pink">⭐</div>
@@ -63,10 +66,12 @@ function Home() {
   );
 }
 
+// Main App component - sets up routing and site structure
 function App() {
   return (
     <BrowserRouter>
       <div className="site-shell">
+        {/* Define all application routes */}
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/login" element={<LoginPage />} />
@@ -85,6 +90,7 @@ function App() {
           <Route path="/my-events" element={<MyEventsPage />} />
         </Routes>
 
+        {/* Site footer */}
         <footer className="site-footer">
           <span className="site-footer-symbol" aria-hidden="true">✦</span>
           Made with passion by students at the University of Florida.

@@ -8,13 +8,16 @@ from modules.key import decrypt
 
 # Variables
 load_env()
+# Decrypt MongoDB connection URI if it's encrypted
 MONGODB_URI = os.getenv("MONGODB_URI", "")
 if MONGODB_URI and not MONGODB_URI.startswith("mongodb+srv://"): MONGODB_URI = decrypt(MONGODB_URI)
 
+# Global MongoDB connection and database instance
 _client = None
 _db = None
 
 # Functions
+# Initialize MongoDB connection to 'eventplanner' database
 def _get_database():
     global _client, _db
 
@@ -25,6 +28,8 @@ def _get_database():
     _db = _client["eventplanner"]
     return _db
 
+# Flatten nested dictionary into dot-notation paths for MongoDB queries
+# Example: {"user": {"name": "John"}} -> {"user.name": "John"}
 def _flatten_dict(value: dict, prefix: str = ""):
     output = {}
 
@@ -38,6 +43,7 @@ def _flatten_dict(value: dict, prefix: str = ""):
 
     return output
 
+# Validate and normalize key parameter for database queries
 def _normalize_key(key):
     if isinstance(key, str):
         if not key.strip(): raise ValueError("key must be a non-empty string")
@@ -49,6 +55,8 @@ def _normalize_key(key):
 
     raise ValueError("key must be a non-empty string or a non-empty dict")
 
+# Extract nested value from dictionary using dot notation path
+# Example: get "user.name" from {"user": {"name": "John"}}
 def _get_nested_value(value: dict, path: str):
     current = value
 
@@ -58,6 +66,7 @@ def _get_nested_value(value: dict, path: str):
 
     return current, True
 
+# Find document in collection by key (supports both ID and nested queries)
 def _find_matching_document(collection: Collection, key):
     normalized_key = _normalize_key(key)
 
@@ -65,9 +74,11 @@ def _find_matching_document(collection: Collection, key):
     if "_id" in normalized_key: return collection.find_one({"_id": normalized_key["_id"]})
 
     query_items = _flatten_dict(normalized_key)
+    # Query nested values stored in 'value' field
     mongo_query = {f"value.{path}": expected for path, expected in query_items.items()}
     return collection.find_one(mongo_query)
 
+# Build MongoDB query from key parameter for finding documents
 def _build_collection_query(key=None):
     if key is None:
         return {}
@@ -82,7 +93,9 @@ def _build_collection_query(key=None):
     query_items = _flatten_dict(normalized_key)
     return {f"value.{path}": expected for path, expected in query_items.items()}
 
+# Database wrapper class - provides simple key-value operations on MongoDB collections
 class database:
+    # Initialize database interface for a collection
     def __init__(self, collection_name: str):
         if not isinstance(collection_name, str) or not collection_name.strip(): raise ValueError("collection_name must be a non-empty string")
 
@@ -90,23 +103,28 @@ class database:
         self.collection_name = collection_name.strip()
         self.collection: Collection = database[self.collection_name]
 
+    # Get single document from collection - returns (value, id) tuple
     def get_document(self, key, default=None):
         document = _find_matching_document(self.collection, key)
         if document is None: return default, None
         return document.get("value", default), document.get("_id")
 
+    # Set or update document in collection - returns (value, key) tuple
     def set_document(self, key: str, value):
         if not isinstance(key, str) or not key.strip(): raise ValueError("key must be a non-empty string")
 
         key = key.strip()
 
         if value is None:
+            # Delete document if value is None
             self.collection.delete_one({"_id": key})
             return None, key
 
+        # Create or update document with value wrapped in 'value' field
         self.collection.update_one({"_id": key}, {"$set": {"value": value}}, upsert=True)
         return value, key
 
+    # Remove and return document from collection
     def remove_document(self, key):
         document = _find_matching_document(self.collection, key)
         if document is None: return None, None
@@ -115,6 +133,7 @@ class database:
         if result.deleted_count <= 0: return None, None
         return document.get("value"), document["_id"]
     
+    # Retrieve all documents (optionally filtered) - returns list of {key, value} pairs
     def get_collection(self, key=None):
         output = []
 
@@ -123,6 +142,7 @@ class database:
 
         return output
     
+    # Delete entire collection and return all documents before deletion
     def remove_collection(self):
         if self.collection_name not in _get_database().list_collection_names(): return None
 
