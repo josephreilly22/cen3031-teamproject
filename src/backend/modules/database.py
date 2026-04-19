@@ -15,6 +15,19 @@ if MONGODB_URI and not MONGODB_URI.startswith("mongodb+srv://"): MONGODB_URI = d
 # Global MongoDB connection and database instance
 _client = None
 _db = None
+_indexed_collections = set()
+MONGODB_CLIENT_OPTIONS = {
+    "serverSelectionTimeoutMS": 5000,
+    "connectTimeoutMS": 5000,
+    "socketTimeoutMS": 15000,
+    "retryReads": True,
+    "retryWrites": True,
+}
+COLLECTION_INDEXES = {
+    "Users": ["value.role"],
+    "Events": ["value.owner_email", "value.location_types", "value.date", "value.end_date"],
+    "EventReports": ["value.event_id", "value.reporter_email"],
+}
 
 # Functions
 # Initialize MongoDB connection to 'eventplanner' database
@@ -24,7 +37,7 @@ def _get_database():
     if _db is not None: return _db
     if not MONGODB_URI: raise ValueError("MONGODB_URI is missing")
 
-    _client = MongoClient(MONGODB_URI)
+    _client = MongoClient(MONGODB_URI, **MONGODB_CLIENT_OPTIONS)
     _db = _client["eventplanner"]
     return _db
 
@@ -102,6 +115,20 @@ class database:
         database = _get_database()
         self.collection_name = collection_name.strip()
         self.collection: Collection = database[self.collection_name]
+        self._ensure_indexes()
+
+    def _ensure_indexes(self):
+        if self.collection_name in _indexed_collections:
+            return
+
+        try:
+            for field_name in COLLECTION_INDEXES.get(self.collection_name, []):
+                index_name = f"{field_name.replace('.', '_')}_idx"
+                self.collection.create_index([(field_name, 1)], name=index_name)
+        except Exception:
+            return
+
+        _indexed_collections.add(self.collection_name)
 
     # Get single document from collection - returns (value, id) tuple
     def get_document(self, key, default=None):

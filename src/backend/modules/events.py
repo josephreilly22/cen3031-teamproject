@@ -1,4 +1,5 @@
 # Imports
+import asyncio
 import uuid
 from datetime import datetime, timezone, timedelta
 from modules.database import database
@@ -304,14 +305,25 @@ def _purge_expired_events():
         return
 
     _last_event_purge_at = now
-    for doc in events_database.get_collection():
-        event = doc.get("value")
-        if not isinstance(event, dict):
-            continue
+    threshold = now.replace(microsecond=0).isoformat() + "Z"
+    expired_event_ids = set()
 
-        expiry_time = _event_expiry_time(event)
-        if expiry_time is not None and expiry_time < now:
-            _delete_event_records(doc.get("key"))
+    for query in ({"end_date": {"$lt": threshold}}, {"date": {"$lt": threshold}}):
+        for doc in events_database.get_collection(query):
+            event_id = doc.get("key")
+            if not event_id or event_id in expired_event_ids:
+                continue
+
+            event = doc.get("value")
+            if not isinstance(event, dict):
+                continue
+
+            expiry_time = _event_expiry_time(event)
+            if expiry_time is not None and expiry_time < now:
+                expired_event_ids.add(event_id)
+
+    for event_id in expired_event_ids:
+        _delete_event_records(event_id)
 
 def _parse_timestamp(value: str):
     if not isinstance(value, str) or not value.strip():
@@ -558,8 +570,8 @@ def get_all_events():
 
 # Get recommended events for user using AI
 async def get_recommended_events(email: str):
-    _purge_expired_events()
-    user, _ = users_database.get_document(email)
+    await asyncio.to_thread(_purge_expired_events)
+    user, _ = await asyncio.to_thread(users_database.get_document, email)
     if user is None:
         return {"success": False, "message": "User not found"}
 
@@ -572,7 +584,11 @@ async def get_recommended_events(email: str):
 
     # Get candidate events matching user's location preferences
     candidate_events = []
-    for doc in events_database.get_collection({"location_types": {"$in": list(allowed_tags)}}):
+    candidate_docs = await asyncio.to_thread(
+        events_database.get_collection,
+        {"location_types": {"$in": list(allowed_tags)}},
+    )
+    for doc in candidate_docs:
         event = doc.get("value")
         if not isinstance(event, dict):
             continue
