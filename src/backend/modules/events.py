@@ -208,13 +208,31 @@ def _event_recommendation_text(event: dict):
     return prefixed[:AI_CHOICE_MAX_LENGTH].rstrip()
 
 def _extract_ranked_scores(result: dict):
-    output = result.get("output")
-    if isinstance(output, list) and output:
-        if isinstance(output[0], dict):
-            return [output]
-        if isinstance(output[0], list):
-            return output
-    return []
+    def _collect_scored_items(value):
+        if isinstance(value, dict):
+            yield value
+            return
+
+        if isinstance(value, list):
+            for item in value:
+                yield from _collect_scored_items(item)
+
+    output = result.get("output") if isinstance(result, dict) else None
+    ranked_scores = {}
+
+    for item in _collect_scored_items(output):
+        label = str(item.get("label", "")).strip()
+        if not label:
+            continue
+
+        try:
+            score = float(item.get("score"))
+        except (TypeError, ValueError):
+            continue
+
+        ranked_scores[label] = score
+
+    return ranked_scores
 
 def _normalize_diversity_threshold(value):
     try:
